@@ -1,0 +1,25 @@
+{
+  "name": "brick",
+  "version": "0.0.0",
+  "description": "Custom element generator using tagged literals",
+  "main": "brick.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WebComponentHelpers/Brick.git"
+  },
+  "keywords": [
+    "web-components",
+    "webcomponents",
+    "generator",
+    "literals"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/WebComponentHelpers/Brick/issues"
+  },
+  "homepage": "https://github.com/WebComponentHelpers/Brick#readme"
+}
