@@ -2,9 +2,10 @@
   "name": "brick",
   "version": "0.0.0",
   "description": "Custom element generator using tagged literals",
-  "main": "brick.js",
+  "main": "build/brick.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "tsc; firefox --new-tab http://127.0.0.1:8080/test/ ; http-server ",
+    "build":"tsc"
   },
   "repository": {
     "type": "git",

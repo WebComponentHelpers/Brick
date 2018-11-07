@@ -10,10 +10,11 @@
  * Returns an object of the type:  {template: "...", props:["...",...], IDs:["..",...]}
  */
 
- // FIXME put declaration of 'output' non mi ricordo come si fa'... [""] <- creano oggetti con liste piene!
+
 export function tGen(strings:Array<string>, ...keys:Array<any>):object{
     
-    let output = {template:"", props: [""], IDs: [""], error: false, error_message: ""};
+    let output : {template: string, props: object, IDs: string[], error: Boolean, error_message: string};
+    output = {template: "", props:[], IDs: [], error: false, error_message: ""};
 
     if(strings.length <= keys.length) {
         output.error = true; 
@@ -34,23 +35,23 @@ export function tGen(strings:Array<string>, ...keys:Array<any>):object{
         if(index === keys.length) return;
 
         // cases:
-        // it was an evaluated expression, just add it
-        if (typeof(keys[index]) === 'string') temp_str += keys[index];
+        // it was an evaluated expression, just add it, otherwise if is an ID add to IDs
+        if (typeof(keys[index]) === 'string' && keys[index][0] === "#") {
+            temp_str += ` id="${keys[index].slice(1,-1)}" `;
+            output.IDs.push(keys[index].slice(1,-1));
+            
+        }
+        else temp_str += keys[index];
         
         if(typeof(keys[index]) === 'object') {
-            
-            if(Array.isArray(keys[index])) for(let val of keys[index]) { if(typeof(val) === 'string') temp_str += val; }
-            else {
-                if(keys[index].hasOwnProperty('props'))
-                    output.props.push(keys[index].props);
-                
-                else if(keys[index].hasOwnProperty('id') && typeof(keys[index].id) ==='string' ) {
-                    temp_str += ` id="${keys[index].id}" `;
-                    output.IDs.push(keys[index].id);
+            if(Array.isArray(keys[index])) {
+                for(let val of keys[index]) { 
+                    if(typeof(val) === 'string') temp_str += val; 
                 }
             }
+            else output.props = keys[index] ;         
         }
-            
+                
     });
 
     output.template = `<template> ${temp_str} </template>`;
@@ -60,7 +61,7 @@ export function tGen(strings:Array<string>, ...keys:Array<any>):object{
 
 export function brick(strings:Array<string>, ...keys:Array<any>) : Function {
 
-    return BaseClass  => class extends BaseClass {
+    return (BaseClass:any) : any => class extends BaseClass {
         constructor(){
             super();
     

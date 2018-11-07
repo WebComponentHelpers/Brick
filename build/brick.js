@@ -8,10 +8,9 @@
  *
  * Returns an object of the type:  {template: "...", props:["...",...], IDs:["..",...]}
  */
-console.log("cazzo");
-
- function tGen(strings, ...keys) {
-    let output = { template: "", props: [""], IDs: [""], error: false, error_message: "" };
+export  function tGen(strings, ...keys) {
+    let output;
+    output = { template: "", props: [], IDs: [], error: false, error_message: "" };
     if (strings.length <= keys.length) {
         output.error = true;
         output.error_message = "Key lenght > than strings length.";
@@ -28,31 +27,29 @@ console.log("cazzo");
         if (index === keys.length)
             return;
         // cases:
-        // it was an evaluated expression, just add it
-        if (typeof (keys[index]) === 'string')
+        // it was an evaluated expression, just add it, otherwise if is an ID add to IDs
+        if (typeof (keys[index]) === 'string' && keys[index][0] === "#") {
+            temp_str += ` id="${keys[index].slice(1, -1)}" `;
+            output.IDs.push(keys[index].slice(1, -1));
+        }
+        else
             temp_str += keys[index];
         if (typeof (keys[index]) === 'object') {
-            console.log("is obj");
-            if (Array.isArray(keys[index]))
+            if (Array.isArray(keys[index])) {
                 for (let val of keys[index]) {
                     if (typeof (val) === 'string')
                         temp_str += val;
                 }
-            else {
-                if (keys[index].hasOwnProperty('props'))
-                    output.props.push(keys[index].props);
-                else if (keys[index].hasOwnProperty('id') && typeof (keys[index].id) === 'string') {
-                    temp_str += ` id="${keys[index].id}" `;
-                    output.IDs.push(keys[index].id);
-                }
             }
+            else
+                output.props = keys[index];
         }
     });
     output.template = `<template> ${temp_str} </template>`;
     return output;
 }
-function brick(strings, ...keys) {
-    return BaseClass => class extends BaseClass {
+export function brick(strings, ...keys) {
+    return (BaseClass) => class extends BaseClass {
         constructor() {
             super();
         }

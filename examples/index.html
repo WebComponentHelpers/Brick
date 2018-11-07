@@ -8,9 +8,24 @@
 
 </head>
 <body>
-    <script src="./brick.js"></script>
-    <script >
-        console.log(tGen`cazzone di brutto`);
+    
+    <script type="module">
+        import  {tGen} from '../build/brick.js';
+
+        window.tGen = tGen;        
+        let test = tGen` 
+        <h1 ${'#ciao'}> Bella</h1>
+
+        ${{
+            ciaoLop : "whatever",
+            _config:{
+
+            }
+        }}        `;
+        function pollo(){
+            console.log('hey');
+        }
+        console.log(test);
     </script>
 </body>
 </html>
