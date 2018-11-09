@@ -8,14 +8,11 @@
  *
  * Returns an object of the type:  {template: "...", props:["...",...], IDs:["..",...]}
  */
-export function tGen(strings, ...keys) {
+export function litRead(strings, ...keys) {
     let output;
-    output = { template: "", props: {}, IDs: [], error: false, error_message: "" };
-    if (strings.length <= keys.length) {
-        output.error = true;
-        output.error_message = "Key lenght > than strings length.";
-        return output;
-    }
+    output = { template: "", props: {}, imports: [], IDs: [] };
+    if (strings.length <= keys.length)
+        throw 'litRead impossible error: you got strings >= keys, this is probably a bug.';
     if (strings.length === 1) {
         output.template = `${strings[0]}`;
         return output;
@@ -26,25 +23,41 @@ export function tGen(strings, ...keys) {
         temp_str += str_val;
         if (index === keys.length)
             return;
+        let key = keys[index];
         // cases:
         // it was an evaluated expression, just add it, otherwise if is an ID add to IDs
-        if (typeof (keys[index]) === 'string') {
-            if (keys[index][0] === "#") {
-                temp_str += ` id="${keys[index].substring(1)}" `;
-                output.IDs.push(keys[index].substring(1));
+        if (typeof (key) === 'string') {
+            if (key[0] === "#") {
+                temp_str += ` id="${key.substring(1)}" `;
+                output.IDs.push(key.substring(1));
             }
             else
-                temp_str += keys[index];
+                temp_str += key;
         }
-        if (typeof (keys[index]) === 'object') {
-            if (Array.isArray(keys[index])) {
-                for (let val of keys[index]) {
+        if (typeof (key) === 'object') {
+            if (Array.isArray(key)) {
+                for (let val of key) {
                     if (typeof (val) === 'string')
                         temp_str += ' ' + val;
+                    else if ('tagName' in val && val.tagName === 'TEMPLATE') {
+                        output.imports.push(val);
+                    }
+                    else
+                        throw 'litRead supports only Arrays of string or <template>. ';
                 }
             }
-            else
-                output.props = keys[index];
+            else if ('tagName' in key && key.tagName === 'TEMPLATE') {
+                output.imports.push(key);
+            }
+            else {
+                // whitelisting, props should be like:    { key : ['string', 'string'], ... }
+                for (let v of Object.values(key)) {
+                    if (typeof (v) !== 'object' || !(Array.isArray(v)) || !(v.length !== 2) ||
+                        typeof (v[0]) !== 'string' || typeof (v[1] !== 'string'))
+                        throw "Supports only object of the type '<template>' or 'litRead-Props'={ key : ['string', 'string'], ... } ";
+                }
+                output.props = key;
+            }
         }
     });
     output.template = `${temp_str}`;
@@ -57,3 +70,7 @@ export function brick(strings, ...keys) {
         }
     };
 }
+// - rename tGen as litRead
+// - add import of styles trough template
+/// check that skipps array of non strings and that sanitize objetcs
+// add trows

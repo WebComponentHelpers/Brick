@@ -1,13 +1,13 @@
-import {tGen} from '../build/brick.js';
+import {litRead} from '../build/brick.js';
 
 
 
 export default function (){
 
-    describe('tGen', function () {
+    describe('litRead', function () {
 
         describe('simple string (no place holder) as input ', function () {
-            let out = tGen`<h1></h1>`;
+            let out = litRead`<h1></h1>`;
 
             it('Sanity check on output types ', function () {
                 chai.assert.typeOf(out.template, 'string', 'template type is a string ');
@@ -27,7 +27,7 @@ export default function (){
             <style> 
             h1   {color: blue;}
             </style>`
-            let out = tGen`${style} <h1>ciao</h1>`;
+            let out = litRead`${style} <h1>ciao</h1>`;
 
             it('Sanity check on output types ', function () {
                 chai.assert.typeOf(out.template, 'string', 'template type is a string ');
@@ -46,7 +46,7 @@ export default function (){
             let style ='h1   {color: blue;}';
             let style1 ='h2   {color: yellow;}';
             let style2 ='span   {color: red;}';
-            let out = tGen`<style>${[style,style1,style2]} </style><h1>ciao</h1>`;
+            let out = litRead`<style>${[style,style1,style2]} </style><h1>ciao</h1>`;
 
             it('Sanity check on output types ', function () {
                 chai.assert.typeOf(out.template, 'string', 'template type is a string ');
@@ -77,7 +77,7 @@ export default function (){
 
 
         describe('Two IDs as input ',()=>{
-            let out = tGen`<h1 ${'#bella'}></h1> <span ${'#ciao'}> </span>`;
+            let out = litRead`<h1 ${'#bella'}></h1> <span ${'#ciao'}> </span>`;
 
             it('sanity check on output types ',()=>{
                 chai.assert.typeOf(out.template, 'string', 'template type is a string ');
@@ -93,7 +93,6 @@ export default function (){
         });
     });
     
-     /// check that skipps array of non strings and that sanitize objetcs
-     // add trows
+    
     
 }
