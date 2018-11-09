@@ -16,7 +16,7 @@ export function litRead(strings:Array<string>, ...keys:Array<any>):object{
     let output : {template: string, props: object, imports: object[], IDs: string[] };
     output = {template: "", props:{}, imports: [], IDs: [] };
 
-    if(strings.length <= keys.length) throw 'litRead impossible error: you got strings >= keys, this is probably a bug.';
+    if(strings.length <= keys.length) throw 'litRead error: you got strings >= keys, this is probably a bug.';
     
     if(strings.length === 1) {
         output.template = `${strings[0]}`;
@@ -84,9 +84,6 @@ export function brick(strings:Array<string>, ...keys:Array<any>) : Function {
         
 }
 
-// - rename tGen as litRead
-// - add import of styles trough template
  /// check that skipps array of non strings and that sanitize objetcs
-     // add trows
-
+    
   
