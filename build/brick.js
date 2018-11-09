@@ -8,16 +8,16 @@
  *
  * Returns an object of the type:  {template: "...", props:["...",...], IDs:["..",...]}
  */
-export  function tGen(strings, ...keys) {
+export function tGen(strings, ...keys) {
     let output;
-    output = { template: "", props: [], IDs: [], error: false, error_message: "" };
+    output = { template: "", props: {}, IDs: [], error: false, error_message: "" };
     if (strings.length <= keys.length) {
         output.error = true;
         output.error_message = "Key lenght > than strings length.";
         return output;
     }
     if (strings.length === 1) {
-        output.template = `<template> ${strings[0]} </template>`;
+        output.template = `${strings[0]}`;
         return output;
     }
     // from here there is at least one key
@@ -28,24 +28,26 @@ export  function tGen(strings, ...keys) {
             return;
         // cases:
         // it was an evaluated expression, just add it, otherwise if is an ID add to IDs
-        if (typeof (keys[index]) === 'string' && keys[index][0] === "#") {
-            temp_str += ` id="${keys[index].slice(1, -1)}" `;
-            output.IDs.push(keys[index].slice(1, -1));
+        if (typeof (keys[index]) === 'string') {
+            if (keys[index][0] === "#") {
+                temp_str += ` id="${keys[index].substring(1)}" `;
+                output.IDs.push(keys[index].substring(1));
+            }
+            else
+                temp_str += keys[index];
         }
-        else
-            temp_str += keys[index];
         if (typeof (keys[index]) === 'object') {
             if (Array.isArray(keys[index])) {
                 for (let val of keys[index]) {
                     if (typeof (val) === 'string')
-                        temp_str += val;
+                        temp_str += ' ' + val;
                 }
             }
             else
                 output.props = keys[index];
         }
     });
-    output.template = `<template> ${temp_str} </template>`;
+    output.template = `${temp_str}`;
     return output;
 }
 export function brick(strings, ...keys) {

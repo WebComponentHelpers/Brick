@@ -5,7 +5,7 @@
   "main": "build/brick.js",
   "scripts": {
     "test": "tsc; firefox --new-tab http://127.0.0.1:8080/test/ ; http-server ",
-    "build":"tsc"
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
@@ -22,5 +22,10 @@
   "bugs": {
     "url": "https://github.com/WebComponentHelpers/Brick/issues"
   },
-  "homepage": "https://github.com/WebComponentHelpers/Brick#readme"
+  "homepage": "https://github.com/WebComponentHelpers/Brick#readme",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "http-server": "^0.11.1",
+    "mocha": "^5.2.0"
+  }
 }
