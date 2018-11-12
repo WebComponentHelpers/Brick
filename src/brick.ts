@@ -41,30 +41,41 @@ export function litRead(strings:Array<string>, ...keys:Array<any>):object{
             else temp_str += key;            
         }
         
-        if(typeof(key) === 'object') {
+        else if(typeof(key) === 'object') {
             if(Array.isArray(key)) {
 
-                for(let val of key) { 
+                for(let val of key) {  // FIXME: if contains string and template it would work... Do we want that?
                     if(typeof(val) === 'string') temp_str += ' ' + val ; 
-                    else if( 'tagName' in val && val.tagName === 'TEMPLATE') {
+                    else if( typeof(val) === 'object' && 'tagName' in val && val.tagName === 'TEMPLATE') {
                         output.imports.push(val);
                     }
-                    else throw 'litRead supports only Arrays of string or <template>. '
+                    else throw 'litRead supports only Arrays of string or <template>. ';
                 }
             }
             else if('tagName' in key && key.tagName === 'TEMPLATE'){
                 output.imports.push(key);
             }
-            else {
-                // whitelisting, props should be like:    { key : ['string', 'string'], ... }
+            else if(Object.values(key).length > 0){
+                // whitelisting, props should be like:    { key : ['string', 'string'], ... } or { key : "string"}
                 for( let v of Object.values(key)){
-                    if(typeof(v) !== 'object' || !(Array.isArray(v)) || !(v.length !== 2) ||
-                       typeof(v[0]) !== 'string' || typeof(v[1] !== 'string')) 
-                        throw "Supports only object of the type '<template>' or 'litRead-Props'={ key : ['string', 'string'], ... } ";
+                        if(typeof(v) === 'string' &&(v !== 'string' && v !== 'bool')) 
+                            throw 'Support only props with string or bool values';
+               
+                        else if ( Array.isArray(v) && 
+                            ( v.length !== 2 || typeof(v[0]) !== 'string' || 
+                            ( typeof(v[1]) !== 'string' && typeof(v[1]) !== 'boolean') 
+                            || (v[0] !=='string' && v[0] !== 'bool')))
+                            throw "Supports only object of the type '<template>' or 'litRead-Props'={ key : ['string', 'string'], ... } ";
+                        
+                        else if( typeof(v) !== 'string' && !Array.isArray(v))
+                            throw "Supports only object of the type '<template>' or 'litRead-Props'={ key : ['string', 'string'], ... } ";
                 }
                 output.props = key ; 
             }
+            else throw "Supports only object of the type '<template>' or 'litRead-Props'={ key : ['string', 'string'], ... } ";
+
         }
+        else throw "Placeholder ${"+typeof(key)+"} is not supported";
                 
     });
 
@@ -84,6 +95,6 @@ export function brick(strings:Array<string>, ...keys:Array<any>) : Function {
         
 }
 
- /// check that skipps array of non strings and that sanitize objetcs
+ /// check that skipps array of non strings and that  objetcs
     
   
