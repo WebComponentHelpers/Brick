@@ -10,10 +10,12 @@
  * Returns an object of the type:  {template: "...", props:["...",...], IDs:["..",...]}
  */
 
+interface litRead_out {
+    template: string, props: object, imports: HTMLTemplateElement[], IDs: string[] 
+}
+export function litRead(strings:Array<string>, keys:Array<any>):litRead_out{
 
-export function litRead(strings:Array<string>, ...keys:Array<any>):object{
-
-    let output : {template: string, props: object, imports: object[], IDs: string[] };
+    let output : {template: string, props: object, imports: HTMLTemplateElement[], IDs: string[] };
     output = {template: "", props:{}, imports: [], IDs: [] };
 
     if(strings.length <= keys.length) throw 'litRead error: you got strings >= keys, this is probably a bug.';
@@ -84,6 +86,24 @@ export function litRead(strings:Array<string>, ...keys:Array<any>):object{
 }
 
 
+export function templateme(strings:Array<string>, ...keys:Array<any>) : HTMLTemplateElement {
+    // NOTE on performance: it is a bit faster this way using insertBefore instead of appendChild,
+    // because in that case there is an additional document.createElement for the additional appended child.
+
+    let read_inputs = litRead(strings, keys);
+    let out_template = document.createElement('template');
+    out_template.innerHTML = read_inputs.template;
+    
+    for (let tmpl of read_inputs.imports) {
+        out_template.insertBefore(tmpl.content.cloneNode(true), out_template.childNodes[0] || null);
+    }
+
+    Object.defineProperty(out_template,'_props', read_inputs.props);
+    Object.defineProperty(out_template,'_IDs', read_inputs.IDs);
+
+    return out_template;
+}   
+
 export function brick(strings:Array<string>, ...keys:Array<any>) : Function {
 
     return (BaseClass:any) : any => class extends BaseClass {
@@ -94,7 +114,5 @@ export function brick(strings:Array<string>, ...keys:Array<any>) : Function {
     };
         
 }
-
- /// check that skipps array of non strings and that  objetcs
     
   

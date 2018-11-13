@@ -8,7 +8,7 @@
  *
  * Returns an object of the type:  {template: "...", props:["...",...], IDs:["..",...]}
  */
-export function litRead(strings, ...keys) {
+export function litRead(strings, keys) {
     let output;
     output = { template: "", props: {}, imports: [], IDs: [] };
     if (strings.length <= keys.length)
@@ -73,6 +73,19 @@ export function litRead(strings, ...keys) {
     output.template = `${temp_str}`;
     return output;
 }
+export function templateme(strings, ...keys) {
+    // NOTE on performance: it is a bit faster this way using insertBefore instead of appendChild,
+    // because in that case there is an additional document.createElement for the additional appended child.
+    let read_inputs = litRead(strings, keys);
+    let out_template = document.createElement('template');
+    out_template.innerHTML = read_inputs.template;
+    for (let tmpl of read_inputs.imports) {
+        out_template.insertBefore(tmpl.content.cloneNode(true), out_template.childNodes[0] || null);
+    }
+    Object.defineProperty(out_template, '_props', read_inputs.props);
+    Object.defineProperty(out_template, '_IDs', read_inputs.IDs);
+    return out_template;
+}
 export function brick(strings, ...keys) {
     return (BaseClass) => class extends BaseClass {
         constructor() {
@@ -80,4 +93,3 @@ export function brick(strings, ...keys) {
         }
     };
 }
-/// check that skipps array of non strings and that  objetcs
