@@ -8,7 +8,7 @@
  *
  * Returns an object of the type:  {template: "...", props:["...",...], IDs:["..",...]}
  */
-export function litRead(strings, keys) {
+export function litRead(strings, ...keys) {
     let output;
     output = { template: "", props: {}, imports: [], IDs: [] };
     if (strings.length <= keys.length)
@@ -70,27 +70,37 @@ export function litRead(strings, keys) {
         else
             throw "Placeholder ${" + typeof (key) + "} is not supported";
     });
-    output.template = `${temp_str}`;
+    output.template = temp_str;
+    // fix for template not appending child
+    let tmpl = document.createElement('template');
+    tmpl.innerHTML = temp_str;
+    output.imports.push(tmpl);
     return output;
 }
 export function templateme(strings, ...keys) {
     // NOTE on performance: it is a bit faster this way using insertBefore instead of appendChild,
     // because in that case there is an additional document.createElement for the additional appended child.
-    let read_inputs = litRead(strings, keys);
+    let read_inputs = litRead(strings, ...keys);
     let out_template = document.createElement('template');
     out_template.innerHTML = read_inputs.template;
+    // THIS DOES NOT WORK
     for (let tmpl of read_inputs.imports) {
-        //     out_template.insertBefore(tmpl.content.cloneNode(true), out_template.childNodes[0] || null);
-        out_template.appendChild(tmpl.content.cloneNode(true));
+        //out_template.insertBefore(tmpl.content.cloneNode(true), out_template.childNodes[0] || null);
+        out_template.appendChild(tmpl.content.cloneNode(true)); // FIXME: cannot add child totemplate 
     }
     Object.defineProperty(out_template, '_props', read_inputs.props);
     Object.defineProperty(out_template, '_IDs', read_inputs.IDs);
     return out_template;
 }
 export function brick(strings, ...keys) {
+    let litOut = litRead(strings, ...keys);
     return (BaseClass) => class extends BaseClass {
         constructor() {
             super();
+            let shadowRoot = this.attachShadow({ mode: 'open' });
+            for (let tmpl of litOut.imports) {
+                shadowRoot.appendChild(tmpl.content.cloneNode(true));
+            }
         }
     };
 }
