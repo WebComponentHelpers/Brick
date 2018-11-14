@@ -82,10 +82,6 @@ export function litRead(strings:Array<string>, ...keys:Array<any>):litRead_out{
     });
 
     output.template = temp_str;
-    // fix for template not appending child
-    let tmpl = document.createElement('template');
-    tmpl.innerHTML = temp_str;
-    output.imports.push(tmpl);
     return output;
 }
 
@@ -118,9 +114,7 @@ export function brick(strings:Array<string>, ...keys:Array<any>) : Function {
         constructor(){
             super();
             let shadowRoot = this.attachShadow({mode: 'open'});
-            for (let tmpl of litOut.imports) {
-                shadowRoot.appendChild(tmpl.content.cloneNode(true));
-            }
+            shadowRoot.innerHTML = litOut.template ;
         }
     };
         

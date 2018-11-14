@@ -71,10 +71,6 @@ export function litRead(strings, ...keys) {
             throw "Placeholder ${" + typeof (key) + "} is not supported";
     });
     output.template = temp_str;
-    // fix for template not appending child
-    let tmpl = document.createElement('template');
-    tmpl.innerHTML = temp_str;
-    output.imports.push(tmpl);
     return output;
 }
 export function templateme(strings, ...keys) {
@@ -98,9 +94,7 @@ export function brick(strings, ...keys) {
         constructor() {
             super();
             let shadowRoot = this.attachShadow({ mode: 'open' });
-            for (let tmpl of litOut.imports) {
-                shadowRoot.appendChild(tmpl.content.cloneNode(true));
-            }
+            shadowRoot.innerHTML = litOut.template;
         }
     };
 }
