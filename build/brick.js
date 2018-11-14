@@ -80,7 +80,8 @@ export function templateme(strings, ...keys) {
     let out_template = document.createElement('template');
     out_template.innerHTML = read_inputs.template;
     for (let tmpl of read_inputs.imports) {
-        out_template.insertBefore(tmpl.content.cloneNode(true), out_template.childNodes[0] || null);
+        //     out_template.insertBefore(tmpl.content.cloneNode(true), out_template.childNodes[0] || null);
+        out_template.appendChild(tmpl.content.cloneNode(true));
     }
     Object.defineProperty(out_template, '_props', read_inputs.props);
     Object.defineProperty(out_template, '_IDs', read_inputs.IDs);
