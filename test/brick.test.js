@@ -7,7 +7,7 @@ export default function (){
     describe('Brick',()=>{
 
         describe('Performance',()=>{
-            it('one cycle in less than ...',()=>{
+            it('one cycle in less than 70mus',()=>{
 
                 let temp = document.createElement('template');
                 temp.innerHTML=`<style> div{color:blue;} span{color:blue;} h1{color:blue;} h2{color:red;} h3{color:blue;} </style>`;
@@ -27,10 +27,15 @@ export default function (){
                 for (let i =0 ; i < n_cycles; i++){
 
                     let te = document.createElement('test-element');
-                     //document.body.appendChild(te);
+                    document.body.appendChild(te);
+                    //document.te= te;
                 }
+                let te = document.createElement('test-element');
+                    document.body.appendChild(te);
+                    document.te= te;
+
                 let tot  = performance.now() - start;
-                chai.assert.isBelow(tot / n_cycles * 1000, 10, "too slow");
+                chai.assert.isBelow(tot / n_cycles * 1000, 70, "too slow");
             });
         });
     });

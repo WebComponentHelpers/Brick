@@ -95,11 +95,56 @@ export function templateme(strings, ...keys) {
 export function brick(strings, ...keys) {
     let litOut = litRead(strings, ...keys);
     return (BaseClass) => class extends BaseClass {
+        static get observedAttributes() {
+            return Object.keys(litOut.props);
+        }
         constructor() {
             super();
+            this._props = litOut.props;
             let shadowRoot = this.attachShadow({ mode: 'open' });
             for (let tmpl of litOut.imports) {
                 shadowRoot.appendChild(tmpl.content.cloneNode(true));
+            }
+            let ids; // fixme
+            ids = {};
+            for (let id of litOut.IDs) {
+                ////console.log('loop id: ', id);
+                ids[id] = shadowRoot.getElementById(id);
+                ////console.log('----> ', ids[id]);
+            }
+            this.shadowRoot['ids'] = ids;
+            this.shadowRoot.qs = this.shadowRoot.querySelector;
+            this.swr = this.shadowRoot;
+            this.setProps();
+        }
+        setProps() {
+            ////console.log('loooping over props');
+            // define getters and setters for list of properties
+            for (let prop in this._props) {
+                Object.defineProperty(this, prop, {
+                    set: (val) => { this.setAttribute(prop, val); },
+                    get: () => { return this.getAttribute(prop); }
+                });
+            }
+            ////console.log('prop_loop end');
+            ////console.log('setProps shadow is: ', this.shadowRoot);
+        }
+        connectedCallback() {
+            if (this.hasOwnProperty('connectedCallback'))
+                super.connectedCallback();
+            for (let prop in this._props) {
+                //////console.log('attr ', prop);
+                //////console.log('does have? ', this.hasAttribute(prop));
+                if (!this.hasAttribute(prop) && Array.isArray(this._props[prop]))
+                    this.setAttribute(prop, this._props[prop][1]);
+            }
+        }
+        attributeChangedCallback(name, oldVal, newVal) {
+            const hasValue = newVal !== null;
+            const updateMe = (hasValue && oldVal !== newVal);
+            //////console.log('attribute changed: ' + name + " old " + oldVal + " new " + newVal);
+            if (updateMe && this._props.hasOwnProperty(name) && this.hasOwnProperty('update_' + name)) {
+                this['update_' + name](newVal);
             }
         }
     };
