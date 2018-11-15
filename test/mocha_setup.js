@@ -9,8 +9,8 @@ import brick_asserts from './brick.test.js';
 mocha.setup('bdd');
 
 // here run asserts
-//litRead_asserts();
-//templateme_asserts();
+// litRead_asserts();
+// templateme_asserts();
 brick_asserts();
 
 mocha.checkLeaks();

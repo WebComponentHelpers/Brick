@@ -82,10 +82,7 @@ export function litRead(strings:Array<string>, ...keys:Array<any>):litRead_out{
     });
 
     output.template = temp_str;
-    // fix for template not appending child
-    let tmpl = document.createElement('template');
-    tmpl.innerHTML = temp_str;
-    output.imports.push(tmpl);
+    
     return output;
 }
 
@@ -97,13 +94,15 @@ export function templateme(strings:Array<string>, ...keys:Array<any>) : HTMLTemp
     let read_inputs = litRead(strings, ...keys);
     let out_template = document.createElement('template');
     out_template.innerHTML = read_inputs.template;
-    // THIS DOES NOT WORK
+
+    /*
+    // THIS DOES NOT WORK 
     for (let tmpl of read_inputs.imports) {
         //out_template.insertBefore(tmpl.content.cloneNode(true), out_template.childNodes[0] || null);
         out_template.appendChild(tmpl.content.cloneNode(true)); // FIXME: cannot add child totemplate 
 
     }
-
+    */
     Object.defineProperty(out_template,'_props', read_inputs.props);
     Object.defineProperty(out_template,'_IDs', read_inputs.IDs);
 
@@ -113,9 +112,11 @@ export function templateme(strings:Array<string>, ...keys:Array<any>) : HTMLTemp
 export function brick(strings:Array<string>, ...keys:Array<any>) : Function {
 
     let litOut = litRead(strings,...keys);
+    let tmpl = document.createElement('template');
+    tmpl.innerHTML = litOut.template;
+    litOut.imports.push(tmpl);
 
     return (BaseClass:any) : any => class extends BaseClass {
-        
 
         static get observedAttributes() {
             return Object.keys(litOut.props);
@@ -130,12 +131,10 @@ export function brick(strings:Array<string>, ...keys:Array<any>) : Function {
                 shadowRoot.appendChild(tmpl.content.cloneNode(true));
             }
 
-            let ids : {string: Element};  // fixme
+            let ids : {string: Element};  // FIXME: wtf is this ts error?
             ids = {};
             for (let id of litOut.IDs){
-                ////console.log('loop id: ', id);
                 ids[id] = shadowRoot.getElementById(id);
-                ////console.log('----> ', ids[id]);
 
 
             }
@@ -149,7 +148,6 @@ export function brick(strings:Array<string>, ...keys:Array<any>) : Function {
 
 
         setProps() {
-            ////console.log('loooping over props');
             // define getters and setters for list of properties
             for (let prop in this._props) {
                 Object.defineProperty(this, prop, {
@@ -157,25 +155,21 @@ export function brick(strings:Array<string>, ...keys:Array<any>) : Function {
                     get: () => { return this.getAttribute(prop); }
                 });
             }
-            ////console.log('prop_loop end');
-            ////console.log('setProps shadow is: ', this.shadowRoot);
         }
-
+    /*
+    /// SUPPORT FOR DEFAULT values on attributes REVOKED. Attributes are behaviours, defaults make no sense.
         connectedCallback() {
-            if(this.hasOwnProperty('connectedCallback') )super.connectedCallback();
+            if(super['connectedCallback'] !==  undefined ) super.connectedCallback();
 
             for (let prop in this._props) {
-                //////console.log('attr ', prop);
-                //////console.log('does have? ', this.hasAttribute(prop));
                 if (!this.hasAttribute(prop) && Array.isArray(this._props[prop]) ) this.setAttribute(prop, this._props[prop][1]);
             }
         }
-
+    */
         attributeChangedCallback(name:string, oldVal:any, newVal:any) {
             const hasValue = newVal !== null;
             const updateMe = (hasValue && oldVal !== newVal);
         
-            //////console.log('attribute changed: ' + name + " old " + oldVal + " new " + newVal);
             if (updateMe && this._props.hasOwnProperty(name) && this.hasOwnProperty('update_'+name)) {
               this['update_'+name](newVal);
             }

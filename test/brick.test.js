@@ -27,13 +27,13 @@ export default function (){
                 for (let i =0 ; i < n_cycles; i++){
 
                     let te = document.createElement('test-element');
-                    document.body.appendChild(te);
-                    //document.te= te;
+                    // document.body.appendChild(te);
+                    // document.te= te;
                 }
-                let te = document.createElement('test-element');
+                /*let te = document.createElement('test-element');
                     document.body.appendChild(te);
                     document.te= te;
-
+                */
                 let tot  = performance.now() - start;
                 chai.assert.isBelow(tot / n_cycles * 1000, 70, "too slow");
             });
