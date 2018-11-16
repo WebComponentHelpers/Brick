@@ -139,7 +139,7 @@ export function brick(strings, ...keys) {
         attributeChangedCallback(name, oldVal, newVal) {
             const hasValue = newVal !== null;
             const updateMe = (hasValue && oldVal !== newVal);
-            if (updateMe && this._props.hasOwnProperty(name) && this.hasOwnProperty('update_' + name)) {
+            if (updateMe && this._props.hasOwnProperty(name) && this['update_' + name] !== undefined) {
                 this['update_' + name](newVal);
             }
         }

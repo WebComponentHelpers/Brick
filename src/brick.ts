@@ -135,8 +135,6 @@ export function brick(strings:Array<string>, ...keys:Array<any>) : Function {
             ids = {};
             for (let id of litOut.IDs){
                 ids[id] = shadowRoot.getElementById(id);
-
-
             }
             this.shadowRoot['ids'] = ids;
             this.shadowRoot.qs = this.shadowRoot.querySelector;
@@ -169,8 +167,7 @@ export function brick(strings:Array<string>, ...keys:Array<any>) : Function {
         attributeChangedCallback(name:string, oldVal:any, newVal:any) {
             const hasValue = newVal !== null;
             const updateMe = (hasValue && oldVal !== newVal);
-        
-            if (updateMe && this._props.hasOwnProperty(name) && this.hasOwnProperty('update_'+name)) {
+            if (updateMe && this._props.hasOwnProperty(name) && this['update_'+name] !== undefined) {
               this['update_'+name](newVal);
             }
         }
