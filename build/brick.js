@@ -1,18 +1,24 @@
 /****************************************************************************************
- *                                    Template generator
+ *                        litRead: Template literal parser                              *
  * **************************************************************************************
- * Composes a string literal into a template element.
- * Concatenates placeholder ${ } that contains arrays of string with the text (mainly for <styles> import).
- * Extract config information in placeholders that contains objects: these can be ${{ID:"something"}} or ${{props:[strings]}}.
- * Can also be used as a tag for string literals directly.
+ * Concatenates placeholder ${ } that contains string or arrays of strings with the text
+ * Extract <template> from placeholder ${ } (mainly for <styles> import).
+ * Insert automatic ID in text if placeholder contain a string starting with '#'
+ * Extract config information in placeholders that contains '|* *|' signature .
  *
- * Returns an object of the type:  {template: "...", props:["...",...], IDs:["..",...]}
+ * Returns an object of the type:
+ * {template: "...", props:{"...",...}, IDs:["..",...], imports:[<template>,...]}
  */
+function inputError(input) {
+    console.log('LitRead does not accept the following ${ } as input in string literal:');
+    console.log(input);
+    throw Error('Invalid input.');
+}
 export function litRead(strings, ...keys) {
     let output;
     output = { template: "", props: {}, imports: [], IDs: [] };
     if (strings.length <= keys.length)
-        throw 'litRead error: you got strings >= keys, this is probably a bug.';
+        throw Error('Improper parameter size.');
     if (strings.length === 1) {
         output.template = `${strings[0]}`;
         return output;
@@ -25,54 +31,79 @@ export function litRead(strings, ...keys) {
             return;
         let key = keys[index];
         // cases:
-        // it was an evaluated expression, just add it, otherwise if is an ID add to IDs
         if (typeof (key) === 'string') {
+            // case of and ID
             if (key[0] === "#") {
                 temp_str += ` id="${key.substring(1)}" `;
                 output.IDs.push(key.substring(1));
             }
+            // case of an attribute
+            else if (key.includes('|*') && key.includes('*|')) {
+                let no_space = key.replace(/\s/g, '');
+                if (no_space.slice(0, 2) !== "|*" || no_space.slice(-2) !== "*|")
+                    inputError(key);
+                let properties = no_space.slice(2, -2).split('|');
+                for (let p of properties) {
+                    if (p.includes('-b'))
+                        output.props[p.replace(/\-b/g, '')] = 'bool';
+                    else
+                        output.props[p] = 'string';
+                }
+            }
+            // case of expression or string
             else
                 temp_str += key;
         }
         else if (typeof (key) === 'object') {
+            // case of a list of strings or templates
             if (Array.isArray(key)) {
-                for (let val of key) { // FIXME: if contains string and template it would work... Do we want that?
+                for (let val of key) {
                     if (typeof (val) === 'string')
                         temp_str += ' ' + val;
                     else if (typeof (val) === 'object' && 'tagName' in val && val.tagName === 'TEMPLATE') {
                         output.imports.push(val);
                     }
                     else
-                        throw 'litRead supports only Arrays of string or <template>. ';
+                        inputError(val);
                 }
             }
+            // case of a template
             else if ('tagName' in key && key.tagName === 'TEMPLATE') {
                 output.imports.push(key);
             }
-            else if (Object.values(key).length > 0) {
+            /*else if(Object.values(key).length > 0){
                 // whitelisting, props should be like:    { key : ['string', 'string'], ... } or { key : "string"}
-                for (let v of Object.values(key)) {
-                    if (typeof (v) === 'string' && (v !== 'string' && v !== 'bool'))
-                        throw 'Support only props with string or bool values';
-                    else if (Array.isArray(v) &&
-                        (v.length !== 2 || typeof (v[0]) !== 'string' ||
-                            (typeof (v[1]) !== 'string' && typeof (v[1]) !== 'boolean')
-                            || (v[0] !== 'string' && v[0] !== 'bool')))
-                        throw "Supports only object of the type '<template>' or 'litRead-Props'={ key : ['string', 'string'], ... } ";
-                    else if (typeof (v) !== 'string' && !Array.isArray(v))
-                        throw "Supports only object of the type '<template>' or 'litRead-Props'={ key : ['string', 'string'], ... } ";
+                for( let v of Object.values(key)){
+                        if(typeof(v) === 'string' &&(v !== 'string' && v !== 'bool'))
+                            inputError(v);
+               
+                        else if ( Array.isArray(v) &&
+                            ( v.length !== 2 || typeof(v[0]) !== 'string' ||
+                            ( typeof(v[1]) !== 'string' && typeof(v[1]) !== 'boolean')
+                            || (v[0] !=='string' && v[0] !== 'bool')))
+                                inputError(v);
+                        
+                        else if( typeof(v) !== 'string' && !Array.isArray(v))
+                            inputError(v);
                 }
-                output.props = key;
-            }
+                output.props = key ;
+            }*/
             else
-                throw "Supports only object of the type '<template>' or 'litRead-Props'={ key : ['string', 'string'], ... } ";
+                inputError(key);
         }
         else
-            throw "Placeholder ${" + typeof (key) + "} is not supported";
+            inputError(key);
     });
     output.template = temp_str;
     return output;
 }
+/****************************************************************************************
+ *                        templateme: Templates generator                               *
+ * **************************************************************************************
+ * Using litRead creates an instance of template in the document.
+ * To be used as a tag for a string literal.
+ * Returns a <template>.
+*/
 export function templateme(strings, ...keys) {
     // NOTE on performance: it is a bit faster this way using insertBefore instead of appendChild,
     // because in that case there is an additional document.createElement for the additional appended child.

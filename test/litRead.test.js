@@ -127,30 +127,28 @@ export default function (){
         describe('Props', ()=>{
             it('Sanity check on values', ()=>{
                 let out0 = litRead`<h1></h1> 
-                ${{
-                    'ciao': ['string','bella']
-                }}`;
+                ${'|*ciao*|'}`;
                let out1 = litRead`<h1></h1> 
-                ${{
-                    'ciao': ['bool',true]
-                }}`;
+                ${'|* ciao -b *|'}`;
                 let out2 = litRead`<h1></h1> 
-                ${{
-                    'ciao': 'string',
-                    zuzzo : 'bool',
-                    peppo :['string', 'bo']
-                }}`;
+                ${'|* ciao | zuzzo -b | peppo *|'}`;
+                let out3 = litRead`<h1></h1> 
+                ${`|* ciao 
+                   | zuzzo - b 
+                   | peppo *|`}`;
+
                 
-                chai.assert.deepEqual(out0.props, {'ciao':['string','bella']}, 'prop fail identity string' );
-                chai.assert.deepEqual(out1.props, {'ciao':['bool', true]}, 'prop fail identity bool' );
-                chai.assert.deepEqual(out2.props,{'ciao': 'string',zuzzo : 'bool',peppo :['string', 'bo']} , 'prop complex fail identity' );
+                chai.assert.deepEqual(out0.props, {'ciao':'string'}, 'prop fail identity string' );
+                chai.assert.deepEqual(out1.props, {'ciao':'bool'}, 'prop fail identity bool' );
+                chai.assert.deepEqual(out2.props,{'ciao': 'string',zuzzo : 'bool',peppo :'string'} , 'prop complex fail identity' );
+                chai.assert.deepEqual(out3.props,{'ciao': 'string',zuzzo : 'bool',peppo :'string'} , 'prop multiline fail identity' );
                 chai.assert.deepEqual(out2.template, '<h1></h1> \n                ', 'template' );
                 chai.assert.deepEqual(out2.IDs, [], 'IDs must be empty' );
                 chai.assert.deepEqual(out2.imports, [], 'imports must be empty' );
 
-
             });
         });
+
         describe('Throw', ()=>{
             function number0(){ let b = litRead`<h1> ${9} </h1>`; }
             function number1(){ let b = litRead`<h1> ${[9,8,9]} </h1>`; }
@@ -163,11 +161,11 @@ export default function (){
             });
  
             it('case of placeholder with function', ()=>{
-                chai.assert.throw(of_function, "Placeholder ${function} is not supported");
-                chai.assert.throw(of_function2, "litRead supports only Arrays of string or <template>");
+                chai.assert.throw(of_function, "Invalid input.");
+                chai.assert.throw(of_function2, "Invalid input.");
             });
 
-            it('case of object that is not a template nor respect props sintax', ()=>{
+            it('case of object that is not a template', ()=>{
                 let obj0 = document.createElement('h1');
                 let func_obj0 = ()=>{ let a = litRead`${obj0} ciao `;} 
                 let func_obj2 = ()=>{ let z = litRead`${["ciao",obj0]} ciao `;} 
@@ -178,14 +176,14 @@ export default function (){
                 let func_obj8 = ()=>{ let z = litRead`${{ciao: 'polo'}} ciao `;} 
                 let func_obj6 = ()=>{ let z = litRead`${{ciao:["object","true"]}} ciao `;} 
 
-                chai.assert.throw(func_obj2,"litRead supports only Arrays of string or <template>");
-                chai.assert.throw(func_obj0,"Supports only object of the type '<template>' or 'litRead-Props'={ key : ['string', 'string'], ... }");
-                chai.assert.throw(func_obj3,"Supports only object of the type '<template>' or 'litRead-Props'={ key : ['string', 'string'], ... }");
-                chai.assert.throw(func_obj4,"Supports only object of the type '<template>' or 'litRead-Props'={ key : ['string', 'string'], ... }");
-                chai.assert.throw(func_obj5,"Supports only object of the type '<template>' or 'litRead-Props'={ key : ['string', 'string'], ... }");
-                chai.assert.throw(func_obj6,"Supports only object of the type '<template>' or 'litRead-Props'={ key : ['string', 'string'], ... }");
-                chai.assert.throw(func_obj7,"Supports only object of the type '<template>' or 'litRead-Props'={ key : ['string', 'string'], ... }");
-                chai.assert.throw(func_obj8,"Support only props with string or bool values");
+                chai.assert.throw(func_obj2,"Invalid input.");
+                chai.assert.throw(func_obj0,"Invalid input.");
+                chai.assert.throw(func_obj3,"Invalid input.");
+                chai.assert.throw(func_obj4,"Invalid input.");
+                chai.assert.throw(func_obj5,"Invalid input.");
+                chai.assert.throw(func_obj6,"Invalid input.");
+                chai.assert.throw(func_obj7,"Invalid input.");
+                chai.assert.throw(func_obj8,"Invalid input.");
             });  
         });
         describe('Generic input', ()=>{
@@ -195,9 +193,7 @@ export default function (){
                 <h1>${'ciao'}</h1> ${""}
                 <h2${'#cocco'}> </h2>
                 ${temp}
-                ${{
-                    'ciao': 'string'
-                }}`;
+                ${'|* ciao *|'}`;
 
                 let str = '\n                <h1>ciao</h1> \n                <h2 id="cocco" > </h2>\n                \n                ';
                 chai.assert.equal(out0.template, str,'template');
@@ -208,8 +204,9 @@ export default function (){
             });
         });
 
+
         describe('Performance',()=>{
-            it('performs 1 cycle in < 2.5 mus',()=>{
+            it('performs 1 cycle in < 3 mus',()=>{
                 let temp = document.createElement('template');
                 let n_cycles = 100000;
                 let start = performance.now();
@@ -218,33 +215,14 @@ export default function (){
                     <h1>${'ciao'}</h1> ${""}
                     <h2${'#cocco'}> </h2>
                     ${temp}
-                    ${{
-                        'ciao': 'string'
-                    }}`;
+                    ${'|* ciao *|'}`;
                 }
                 let tot = performance.now() - start;
-                chai.assert.isBelow( tot / n_cycles * 1000 , 2.5, 'time larger than expected');
+                chai.assert.isBelow( tot / n_cycles * 1000 , 3, 'time larger than expected');
                 console.log('performs '+ n_cycles + ' in ' + tot + ' ms');
             });
         });
 
     });
-    /* // how it will look like
-    let b = html`
-            ${[style0, style1]}
-            <style>
-                .div {
-                    color:blue;
-                }
-            </style>
-
-            <h1 ${'#id'} > ciao </h1>
-            <div ${'#pollo'}> </div>
-
-            ${{
-                test : 'string',
-                drop : ['bool', true]
-             }}
-    `;
-    */
+    
 }

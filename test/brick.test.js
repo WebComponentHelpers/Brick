@@ -17,13 +17,7 @@ export default function (){
                                 <h1>ciao</h1>
 
                                 ${style} 
-                                ${{
-                                    ciao:'string',
-                                    pollo:'string'
-                                }}
-
-                                ${'|* pippo -n | pluto -b | ciao *|'}
-                                `;
+                                ${'|* ciao | pollo *|'} `;
 
                 customElements.define('test-element',class extends mixin(HTMLElement){
                     update_ciao(newval){
