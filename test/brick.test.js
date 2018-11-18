@@ -88,12 +88,12 @@ export default function (){
                 chai.assert.equal(attr_value,'second', 'the attr on change has been called.');
                 chai.assert.equal(counter, 2, 'attribute change has been called for second time');
                 chai.assert.equal(el.not_updatable,'test', 'the attr reflect to property.');
-
+                el.removeAttribute('updatable');
+                chai.assert.isNull(el.updatable,'the attr has been remover.');
+                chai.assert.isNull(attr_value,'the attr on change has been called on remove attr.');
+                chai.assert.equal(counter, 3, 'attribute change has been called for third time');
+                chai.assert.equal(el.not_updatable,'test', 'the attr reflect to property.');
             });
-                // reflect the atribute properly from javascrit
-            // reflect the atribute properly from HTML
-            // behaviour: runs on update when defined
-            // behaviour: skip when on update is not defined
 
         });
 
