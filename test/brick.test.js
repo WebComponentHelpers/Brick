@@ -4,7 +4,8 @@ import {brick} from '../build/brick.js'
 
 export default function (){
 
-    let counter = "";
+    let counter = 0;
+    let attr_value = 'default';
     let style = document.createElement('template');
     style.innerHTML=`<style> h1{color:blue;} h2{color:red;} h3{color:green;} </style>`;
     let h1 = document.createElement('template');
@@ -21,8 +22,9 @@ export default function (){
                     ${'|* updatable | not_updatable *|'} `;
 
     customElements.define('test-element',class extends mixin(HTMLElement){
-        update_ciao(newval){
-            counter = newval;
+        update_updatable(newval){
+            attr_value = newval;
+            counter++;
         }
         
     });
@@ -61,8 +63,34 @@ export default function (){
         });
 
         describe('Attribute',()=>{
-            // has the attributes
-            // reflect the atribute properly from javascrit
+            it('Has the properties',()=>{
+                chai.assert.property(el, 'updatable', 'has updatable attibute');
+                chai.assert.property(el, 'not_updatable', 'has not_updatable attribute');
+                chai.assert.isNull(el.updatable,'at this point property must be null');
+                chai.assert.isNull(el.not_updatable,'at this point property must be null');
+            });
+
+            it('Reflects properties value correctly, from JS and HTML.',()=>{
+                chai.assert.equal(attr_value,'default', 'the attr on change has not been called.');
+                chai.assert.equal(counter, 0, 'attribute change has not been called.');
+                el.setAttribute('updatable','uhmmm');
+                chai.assert.equal(el.updatable,'uhmmm', 'the attr reflect to property.');
+                chai.assert.equal(attr_value,'uhmmm', 'the attr on change has been called.');
+                chai.assert.equal(counter, 1, 'attribute change has been called only once');
+                chai.assert.isNull(el.not_updatable,'This must stillbe null.');
+                el.setAttribute('not_updatable','test');
+                chai.assert.equal(el.not_updatable,'test', 'the attr reflect to property.');
+                chai.assert.equal(el.updatable,'uhmmm', 'the attr reflect to property.');
+                chai.assert.equal(attr_value,'uhmmm', 'the attr on change has been called.');
+                chai.assert.equal(counter, 1, 'attribute change has been called only once');
+                el.updatable = 'second';
+                chai.assert.equal(el.updatable,'second', 'the attr reflect to property.');
+                chai.assert.equal(attr_value,'second', 'the attr on change has been called.');
+                chai.assert.equal(counter, 2, 'attribute change has been called for second time');
+                chai.assert.equal(el.not_updatable,'test', 'the attr reflect to property.');
+
+            });
+                // reflect the atribute properly from javascrit
             // reflect the atribute properly from HTML
             // behaviour: runs on update when defined
             // behaviour: skip when on update is not defined
@@ -81,8 +109,8 @@ export default function (){
                     // document.body.appendChild(te);
                 }
                 let te = document.createElement('test-element');
-                    document.body.appendChild(te);
-                    document.te= te;
+                    // document.body.appendChild(te);
+                    // document.te= te;
                 
                 let tot  = performance.now() - start;
                 chai.assert.isBelow(tot / n_cycles * 1000, 75, "too slow");

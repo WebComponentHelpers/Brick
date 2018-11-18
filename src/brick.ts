@@ -175,6 +175,7 @@ export function brick(strings:Array<string>, ...keys:Array<any>) : Function {
             this.swr = this.shadowRoot;
 
             this.setProps();
+
         }
         
 
@@ -199,8 +200,8 @@ export function brick(strings:Array<string>, ...keys:Array<any>) : Function {
         }
     */
         attributeChangedCallback(name:string, oldVal:any, newVal:any) {
-            const hasValue = newVal !== null;
-            const updateMe = (hasValue && oldVal !== newVal);
+            const hasValue = (newVal !== null);
+            const updateMe = (!hasValue || oldVal !== newVal);
             if (updateMe && this._props.hasOwnProperty(name) && this['update_'+name] !== undefined) {
               this['update_'+name](newVal);
             }
