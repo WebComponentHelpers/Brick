@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "Custom element generator using tagged literals",
   "main": "build/brick.js",
+  "types":"src/brick.ts",
   "scripts": {
     "test": "tsc; firefox --new-tab http://127.0.0.1:8080/test/ ; http-server ",
     "build": "tsc",
