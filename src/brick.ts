@@ -44,16 +44,16 @@ export function litRead(strings:Array<string>, ...keys:Array<any>):litRead_out{
 
         // cases:
         if (typeof(key) === 'string'){ 
+            let trimmed = key ;
+            trimmed.trim();
             // case of and ID
-            if( key[0] === "#") {
-                temp_str += ` id="${key.substring(1)}" `;
-                output.IDs.push(key.substring(1));
+            if( trimmed[0] === "#") {
+                temp_str += ` id="${trimmed.substring(1)}" `;
+                output.IDs.push(trimmed.substring(1));
             }
             // case of an attribute
-            else if(key.includes('|*') && key.includes('*|')){
-                let no_space = key.replace(/\s/g,'');
-                if(no_space.slice(0,2) !== "|*" || no_space.slice(-2) !== "*|")
-                    inputError(key);
+            else if(trimmed.slice(0,2) === '|*' && trimmed.slice(-2) === '*|'){
+                let no_space = trimmed.replace(/\s/g,'');
 
                 let properties = no_space.slice(2,-2).split('|');
 

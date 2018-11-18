@@ -222,7 +222,7 @@ export default function (){
                 console.log('performs '+ n_cycles + ' in ' + tot + ' ms');
             });
         });
-
+        
     });
     
 }
