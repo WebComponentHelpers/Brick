@@ -7,7 +7,7 @@ One can then add the mixin (and so the generated template) to the HTMLElement cl
 
 It is inspired by [lit-element]() with one big difference: it **does not include virtual-dom**.
 Have you ever tought that maybe you don't need v-dom on web-components? 
-Have a look at this repo for example: [App-State and Data Binding Using DOM Events](https://github.com/WebComponentHelpers/StateElement).
+Have a look at this repo for example: [App-State and Data Binding Using Proxy](https://github.com/WebComponentHelpers/StateElement).
 
 
 # What it Does
