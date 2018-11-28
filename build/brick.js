@@ -176,3 +176,5 @@ export function brick(strings, ...keys) {
         }
     };
 }
+// some shortcuts:
+export let dfn = customElements.define;

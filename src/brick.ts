@@ -212,4 +212,7 @@ export function brick(strings:Array<string>, ...keys:Array<any>) : Function {
         
 }
     
-  
+// some shortcuts:
+
+export let dfn = customElements.define;
+
