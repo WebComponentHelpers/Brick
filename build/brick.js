@@ -36,8 +36,8 @@ export function litRead(strings, ...keys) {
             trimmed.trim();
             // case of and ID
             if (trimmed[0] === "#" && trimmed[1] === ":") {
-                temp_str += ` id="${trimmed.substring(1)}" `;
-                output.IDs.push(trimmed.substring(1));
+                temp_str += ` id="${trimmed.substring(2)}" `;
+                output.IDs.push(trimmed.substring(2));
             }
             // case of an attribute
             else if (trimmed.slice(0, 2) === '|*' && trimmed.slice(-2) === '*|') {
