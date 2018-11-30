@@ -47,7 +47,7 @@ export function litRead(strings:Array<string>, ...keys:Array<any>):litRead_out{
             let trimmed = key ;
             trimmed.trim();
             // case of and ID
-            if( trimmed[0] === "#") {
+            if( trimmed[0] === "#" && trimmed[1] ===":") {
                 temp_str += ` id="${trimmed.substring(1)}" `;
                 output.IDs.push(trimmed.substring(1));
             }
