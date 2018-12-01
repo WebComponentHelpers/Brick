@@ -11,8 +11,13 @@
  * {template: "...", props:{"...",...}, IDs:["..",...], imports:[<template>,...]}
  */
 
+
+interface propObject {
+    [key: string]: string
+}
+
 interface litRead_out {
-    template: string, props: object, imports: HTMLTemplateElement[], IDs: string[] 
+    template: string, props: propObject, imports: HTMLTemplateElement[], IDs: string[] 
 }
 
 function inputError(input : any ):void{
@@ -21,9 +26,9 @@ function inputError(input : any ):void{
     throw Error('Invalid input.');
 }
 
-export function litRead(strings:Array<string>, ...keys:Array<any>):litRead_out{
+export function litRead(strings:TemplateStringsArray, ...keys:Array<any>):litRead_out{
 
-    let output : {template: string, props: object, imports: HTMLTemplateElement[], IDs: string[] };
+    let output : {template: string, props: propObject, imports: HTMLTemplateElement[], IDs: string[] };
     output = {template: "", props:{}, imports: [], IDs: [] };
 
     if(strings.length <= keys.length) 
@@ -121,7 +126,7 @@ export function litRead(strings:Array<string>, ...keys:Array<any>):litRead_out{
  * To be used as a tag for a string literal.
  * Returns a <template>.
 */
-export function templateme(strings:Array<string>, ...keys:Array<any>) : HTMLTemplateElement {
+export function templateme(strings:TemplateStringsArray, ...keys:Array<any>) : HTMLTemplateElement {
     // NOTE on performance: it is a bit faster this way using insertBefore instead of appendChild,
     // because in that case there is an additional document.createElement for the additional appended child.
 
@@ -143,7 +148,7 @@ export function templateme(strings:Array<string>, ...keys:Array<any>) : HTMLTemp
     return out_template;
 }   
 
-export function brick(strings:Array<string>, ...keys:Array<any>) : Function {
+export function brick(strings:TemplateStringsArray, ...keys:Array<any>) : Function {
 
     let litOut = litRead(strings,...keys);
     let tmpl = document.createElement('template');
@@ -165,7 +170,7 @@ export function brick(strings:Array<string>, ...keys:Array<any>) : Function {
                 shadowRoot.appendChild(tmpl.content.cloneNode(true));
             }
 
-            let ids : {string: Element};  // FIXME: wtf is this ts error?
+            let ids : {[key:string]: Element};  // FIXME: wtf is this ts error?
             ids = {};
             for (let id of litOut.IDs){
                 ids[id] = shadowRoot.getElementById(id);
