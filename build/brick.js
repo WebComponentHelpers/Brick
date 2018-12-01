@@ -143,7 +143,7 @@ export function brick(strings, ...keys) {
             for (let id of litOut.IDs) {
                 ids[id] = shadowRoot.getElementById(id);
             }
-            this.shadowRoot['ids'] = ids;
+            this['ids'] = ids;
             this.shadowRoot.qs = this.shadowRoot.querySelector;
             this.swr = this.shadowRoot;
             this.setProps();

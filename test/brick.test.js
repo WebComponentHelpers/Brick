@@ -14,8 +14,8 @@ export default function (){
     h2.innerHTML=`<h2> smaller test </h2>`;
     
     let mixin = brick`<h3>${'ciao'}</h3> ${""}
-                    <h4${'#cocco'}> Ciao</h4>
-                    <h5${'#hey'}>ciao</h5>
+                    <h4${'#:cocco'}> Ciao</h4>
+                    <h5${'#:hey'}>ciao</h5>
 
                     ${style} 
                     ${[h1,h2]}
@@ -49,15 +49,15 @@ export default function (){
 
                 chai.assert.property(el,"swr", 'has shortcut for shadow');
                 chai.assert.property(el.shadowRoot,"qs", 'has shortcut for query selector');
-                chai.assert.property(el.shadowRoot,"ids", 'has shortcut for ids');
+                chai.assert.property(el,"ids", 'has shortcut for ids');
             }); 
         });
 
         describe('IDs',()=>{
             it('has ID quick reference well defined, and no more no less than 2.',()=>{
-                chai.assert.include(el.shadowRoot.ids.cocco, {tagName:'H4', id:"cocco"}, 'ID reference 1 ok');
-                chai.assert.include(el.shadowRoot.ids.hey, {tagName:'H5', id:"hey"}, 'ID reference 2 ok');
-                chai.assert.equal(Object.keys(el.shadowRoot.ids).length, 2, 'only 2 IDs no more, no less');
+                chai.assert.include(el.ids.cocco, {tagName:'H4', id:"cocco"}, 'ID reference 1 ok');
+                chai.assert.include(el.ids.hey, {tagName:'H5', id:"hey"}, 'ID reference 2 ok');
+                chai.assert.equal(Object.keys(el.ids).length, 2, 'only 2 IDs no more, no less');
             });
             
         });

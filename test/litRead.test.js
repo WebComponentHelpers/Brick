@@ -83,7 +83,7 @@ export default function (){
 
 
         describe('Two IDs as input ',()=>{
-            let out = litRead`<h1 ${'#bella'}></h1> <span ${'#ciao'}> </span>`;
+            let out = litRead`<h1 ${'#:bella'}></h1> <span ${'#:ciao'}> </span>`;
 
             it('sanity check on output types ',()=>{
                 chai.assert.typeOf(out.template, 'string', 'template type is a string ');
@@ -191,7 +191,7 @@ export default function (){
                 let temp = document.createElement('template');
                 let out0 = litRead`
                 <h1>${'ciao'}</h1> ${""}
-                <h2${'#cocco'}> </h2>
+                <h2${'#:cocco'}> </h2>
                 ${temp}
                 ${'|* ciao *|'}`;
 
@@ -213,7 +213,7 @@ export default function (){
                 for(let k=0 ; k< n_cycles; k++){
                     let out0 = litRead`
                     <h1>${'ciao'}</h1> ${""}
-                    <h2${'#cocco'}> </h2>
+                    <h2${'#:cocco'}> </h2>
                     ${temp}
                     ${'|* ciao *|'}`;
                 }

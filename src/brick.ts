@@ -175,7 +175,7 @@ export function brick(strings:TemplateStringsArray, ...keys:Array<any>) : Functi
             for (let id of litOut.IDs){
                 ids[id] = shadowRoot.getElementById(id);
             }
-            this.shadowRoot['ids'] = ids;
+            this['ids'] = ids;
             this.shadowRoot.qs = this.shadowRoot.querySelector;
             this.swr = this.shadowRoot;
 
