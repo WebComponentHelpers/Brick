@@ -52,7 +52,7 @@ export function litRead(strings:TemplateStringsArray, ...keys:Array<any>):litRea
             let trimmed = key ;
             trimmed.trim();
             // case of and ID
-            if( trimmed[0] === "#" && trimmed[1] ===":") {
+            if( trimmed[0] === "#" && trimmed[1] ==="-") {
                 temp_str += ` id="${trimmed.substring(2)}" `;
                 output.IDs.push(trimmed.substring(2));
             }

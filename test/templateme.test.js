@@ -12,7 +12,7 @@ export default function (){
                 let temp = document.createElement('template');
                 temp.innerHTML=`<style> div{color:blue;} span{color:blue;} h1{color:blue;} h2{color:blue;} h3{color:blue;} </style>`;
                 
-                let template = templateme`<h1>${'ciao'}</h1> ${""} <h2${'#:cocco'}> </h2> <h1>ciao</h1> ${temp} ${'|*ciao*|'}`;
+                let template = templateme`<h1>${'ciao'}</h1> ${""} <h2${'#-cocco'}> </h2> <h1>ciao</h1> ${temp} ${'|*ciao*|'}`;
                 let innerhtml = `<h1>ciao</h1>  <h2 id="cocco"> </h2> <h1>ciao</h1>  `;
                                  
                 chai.assert.equal(template.innerHTML,innerhtml, 'inner html');
@@ -32,7 +32,7 @@ export default function (){
                 let start = performance.now();
                 for(let k=0; k < n_cycles; k++){
                     let template = templateme`<h1>${'ciao'}</h1> ${""}
-                                <h2${'#:cocco'}> </h2>
+                                <h2${'#-cocco'}> </h2>
                                 <h1>ciao</h1>
                                 ${temp}                
                                 ${'|*ciao*|'}`;

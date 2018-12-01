@@ -14,8 +14,8 @@ export default function (){
     h2.innerHTML=`<h2> smaller test </h2>`;
     
     let mixin = brick`<h3>${'ciao'}</h3> ${""}
-                    <h4${'#:cocco'}> Ciao</h4>
-                    <h5${'#:hey'}>ciao</h5>
+                    <h4${'#-cocco'}> Ciao</h4>
+                    <h5${'#-hey'}>ciao</h5>
 
                     ${style} 
                     ${[h1,h2]}
