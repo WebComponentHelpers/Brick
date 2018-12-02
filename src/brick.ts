@@ -204,5 +204,5 @@ export function brick(strings:TemplateStringsArray, ...keys:Array<any>) : Functi
     
 // some shortcuts:
 
-export let dfn = customElements.define;
+export let dfn = customElements.define.bind(customElements);
 
