@@ -156,7 +156,7 @@ export default function (){
             function of_function2(){ let c = litRead`bla ${["ciao",number1]}`;}
 
             it('case of number and list of numbers', ()=>{
-                chai.assert.throws(number0);
+                chai.assert.doesNotThrow(number0);
                 chai.assert.throws(number1);
             });
  

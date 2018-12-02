@@ -90,25 +90,10 @@ export function litRead(strings:TemplateStringsArray, ...keys:Array<any>):litRea
             else if('tagName' in key && key.tagName === 'TEMPLATE'){
                 output.imports.push(key);
             }
-            /*else if(Object.values(key).length > 0){
-                // whitelisting, props should be like:    { key : ['string', 'string'], ... } or { key : "string"}
-                for( let v of Object.values(key)){
-                        if(typeof(v) === 'string' &&(v !== 'string' && v !== 'bool')) 
-                            inputError(v);
-               
-                        else if ( Array.isArray(v) && 
-                            ( v.length !== 2 || typeof(v[0]) !== 'string' || 
-                            ( typeof(v[1]) !== 'string' && typeof(v[1]) !== 'boolean') 
-                            || (v[0] !=='string' && v[0] !== 'bool')))
-                                inputError(v);
-                        
-                        else if( typeof(v) !== 'string' && !Array.isArray(v))
-                            inputError(v);
-                }
-                output.props = key ; 
-            }*/
             else inputError(key);
-
+        }
+        else if( typeof(key) === 'number'){
+            temp_str += key.toString(10);
         }
         else inputError(key);
                 
