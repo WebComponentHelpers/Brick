@@ -1,6 +1,6 @@
 {
   "name": "brick-element",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Custom element generator using tagged literals",
   "main": "build/brick.js",
   "types": "src/brick.ts",
@@ -28,6 +28,10 @@
   "devDependencies": {
     "chai": "^4.2.0",
     "http-server": "^0.11.1",
-    "mocha": "^5.2.0"
+    "mocha": "^5.2.0",
+    "ts-loader": "^5.3.1",
+    "typescript": "^3.2.1",
+    "webpack": "^4.26.1",
+    "webpack-cli": "^3.1.2"
   }
 }
