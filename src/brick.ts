@@ -154,7 +154,7 @@ export function brick(strings:TemplateStringsArray, ...keys:Array<any>) : Functi
             super();
 
             this._props = litOut.props;
-            let conf = config.shadowRoot || {mode:'open', delegatesFocus:false} ;
+            let conf = (config) ? config.shadowRoot : {mode:'open', delegatesFocus:false} ;
             let shadowRoot = this.attachShadow(conf);
             for (let tmpl of litOut.imports) {
                 shadowRoot.appendChild(tmpl.content.cloneNode(true));
