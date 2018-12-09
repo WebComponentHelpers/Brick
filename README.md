@@ -26,7 +26,6 @@ for example one could use Events or you can have a look at this repo: [App-State
 npm i brick-element
 ```
 
-#Usage
 
 ## Import it in your code
 
@@ -78,7 +77,7 @@ let mixin = brick`
 Let's create a simple button that when has the attribute disabled cannot be clicked.
 To define an intrinsic ID one can use the symbol prefix **#-** in a string before the ID name, like this:
 
-```
+```javascript
 let mixin = brick`
 	<button ${"#-btn"}> </button>
 `;
@@ -92,5 +91,5 @@ dfn("button-x",class extends mixin(HTMLElement){
 
 ```
 
-Here **ids** is an object that has been automatically attached to ```this``` that will contain as key all objects names whos ID is specified with sintax above.
+Here **ids** is an object that has been automatically attached to ```this``` that will contain as key all objects names whose ID is specified as above.
 

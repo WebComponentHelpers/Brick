@@ -133,6 +133,10 @@ export function templateme(strings:TemplateStringsArray, ...keys:Array<any>) : H
     return out_template;
 }   
 
+
+interface configs{
+    shadowRoot?:{mode:string,delegatesFocus:boolean }
+}
 export function brick(strings:TemplateStringsArray, ...keys:Array<any>) : Function {
 
     let litOut = litRead(strings,...keys);
@@ -140,7 +144,7 @@ export function brick(strings:TemplateStringsArray, ...keys:Array<any>) : Functi
     tmpl.innerHTML = litOut.template;
     litOut.imports.push(tmpl);
 
-    return (BaseClass:any) : any => class extends BaseClass {
+    return (BaseClass:any,config:configs) : any => class extends BaseClass {
 
         static get observedAttributes() {
             return Object.keys(litOut.props);
@@ -150,7 +154,8 @@ export function brick(strings:TemplateStringsArray, ...keys:Array<any>) : Functi
             super();
 
             this._props = litOut.props;
-            let shadowRoot = this.attachShadow({mode: 'open'});
+            let conf = config.shadowRoot || {mode:'open', delegatesFocus:false} ;
+            let shadowRoot = this.attachShadow(conf);
             for (let tmpl of litOut.imports) {
                 shadowRoot.appendChild(tmpl.content.cloneNode(true));
             }

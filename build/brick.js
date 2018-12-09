@@ -113,14 +113,15 @@ export function brick(strings, ...keys) {
     let tmpl = document.createElement('template');
     tmpl.innerHTML = litOut.template;
     litOut.imports.push(tmpl);
-    return (BaseClass) => class extends BaseClass {
+    return (BaseClass, config) => class extends BaseClass {
         static get observedAttributes() {
             return Object.keys(litOut.props);
         }
         constructor() {
             super();
             this._props = litOut.props;
-            let shadowRoot = this.attachShadow({ mode: 'open' });
+            let conf = config.shadowRoot || { mode: 'open', delegatesFocus: false };
+            let shadowRoot = this.attachShadow(conf);
             for (let tmpl of litOut.imports) {
                 shadowRoot.appendChild(tmpl.content.cloneNode(true));
             }
