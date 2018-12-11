@@ -184,7 +184,8 @@ export function brick(strings:TemplateStringsArray, ...keys:Array<any>) : Functi
             this.shadowRoot.qs = this.shadowRoot.querySelector;
             this.swr = this.shadowRoot;
 
-            this.setProps();
+            // already called in super if inheriting from a brick
+            if(!(config && config.inherit)) this.setProps();
 
         }
         
