@@ -117,7 +117,7 @@ export function brick(strings, ...keys) {
         static get observedAttributes() {
             let arr = [];
             if (super.observedAttributes) {
-                arr = super.observedAttributes();
+                arr = super.observedAttributes;
             }
             return arr.concat(Object.keys(litOut.props));
         }
