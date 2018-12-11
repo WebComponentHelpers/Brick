@@ -136,6 +136,7 @@ export function templateme(strings:TemplateStringsArray, ...keys:Array<any>) : H
 
 interface configs{
     shadowRoot?:{mode:string,delegatesFocus:boolean }
+    inherit?:boolean
 }
 export function brick(strings:TemplateStringsArray, ...keys:Array<any>) : Function {
 
@@ -146,26 +147,40 @@ export function brick(strings:TemplateStringsArray, ...keys:Array<any>) : Functi
 
     return (BaseClass:any,config:configs) : any => class extends BaseClass {
 
+        ids:{[key:string]: Element};
+        _props:propObject;
+
         static get observedAttributes() {
-            return Object.keys(litOut.props);
+            let arr = [];
+            if(super.observedAttributes){
+                arr = super.observedAttributes();
+            }
+            return arr.concat(Object.keys(litOut.props));
         }
 
         constructor(){
             super();
 
-            this._props = litOut.props;
-            let conf = (config) ? config.shadowRoot : {mode:'open', delegatesFocus:false} ;
-            let shadowRoot = this.attachShadow(conf);
+            // copy props, this works also in case of inheritance
+            if(!this._props) this._props = {};
+            for (let key in  litOut.props){
+                this._props[key] = litOut.props[key];
+            }
+            
+            // attach shadow or inherit shadow
+            let conf = (config && config.shadowRoot) ? config.shadowRoot : {mode:'open', delegatesFocus:false} ;
+            let shadowRoot = (config && config.inherit) ? this.shadowRoot : this.attachShadow(conf);
+
             for (let tmpl of litOut.imports) {
                 shadowRoot.appendChild(tmpl.content.cloneNode(true));
             }
 
-            let ids : {[key:string]: Element};  // FIXME: wtf is this ts error?
-            ids = {};
+            // attach elements IDs
+            if(!this.ids) this.ids  =  {};
             for (let id of litOut.IDs){
-                ids[id] = shadowRoot.getElementById(id);
+                this.ids[id] = shadowRoot.getElementById(id);
             }
-            this['ids'] = ids;
+
             this.shadowRoot.qs = this.shadowRoot.querySelector;
             this.swr = this.shadowRoot;
 
@@ -177,7 +192,8 @@ export function brick(strings:TemplateStringsArray, ...keys:Array<any>) : Functi
 
         setProps() {
             // define getters and setters for list of properties
-            for (let prop in this._props) {
+            // in case of inheritance does not re-define props
+            for (let prop in litOut.props) {
                 Object.defineProperty(this, prop, {
                     set: (val) => { this.setAttribute(prop, val); },
                     get: () => { return this.getAttribute(prop); }
@@ -208,6 +224,5 @@ export function brick(strings:TemplateStringsArray, ...keys:Array<any>) : Functi
 }
     
 // some shortcuts:
-
 export let dfn = customElements.define.bind(customElements);
 
