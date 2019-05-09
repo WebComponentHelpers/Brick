@@ -145,6 +145,8 @@ export function brick(strings:TemplateStringsArray, ...keys:Array<any>) : Functi
     tmpl.innerHTML = litOut.template;
     litOut.imports.push(tmpl);
 
+    // Typescript: FIXME, would be nice to return at least an HTMLElement, 
+    // but cannot make it work
     return (BaseClass:any,config:configs) : any => class extends BaseClass {
 
         ids:{[key:string]: Element};
