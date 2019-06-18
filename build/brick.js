@@ -113,6 +113,8 @@ export function brick(strings, ...keys) {
     let tmpl = document.createElement('template');
     tmpl.innerHTML = litOut.template;
     litOut.imports.push(tmpl);
+    // Typescript: FIXME, would be nice to return at least an HTMLElement, 
+    // but cannot make it work
     return (BaseClass, config) => class extends BaseClass {
         static get observedAttributes() {
             let arr = [];

@@ -150,6 +150,7 @@ export function brick(strings:TemplateStringsArray, ...keys:Array<any>) : Functi
     return (BaseClass:any,config:configs) : any => class extends BaseClass {
 
         ids:{[key:string]: Element};
+        swr:ShadowRoot;
         _props:propObject;
 
         static get observedAttributes() {
