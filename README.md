@@ -103,10 +103,10 @@ If this function is not the defined then this call is ignored.
 
 let mixin = brick`
 	<style>
-		:host[red]{ /* once the attribute red is added to the element*/
+		:host[red] > button { /* once the attribute red is added to the element*/
 			background-color:red;
 		}
-		:host[green]{ /* once the attribute red is added to the element*/
+		:host[green] > button { /* once the attribute red is added to the element*/
 			background-color:green;
 		}
 	</style>
