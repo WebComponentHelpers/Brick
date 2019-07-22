@@ -1,5 +1,3 @@
- :warning: ```Still in beta.```
-
 # Brick
 
 This is a webcomponent generator, it uses string literals to generate an HTML template and a mixin.
@@ -56,7 +54,7 @@ customElements.define("hello-x",class extends mixin(HTMLElement){});
 ```
 
 Now this is [tagged literal](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals), 
-this means that you can add expression into it (similarly to lit-elemet) and the will be executed.
+this means that you can add expression into it (similarly to lit-elemet) and they will be executed.
 
 **Brick supports:** ```number, string, array of strings and <template>``` as input placeholders like this:
 ```javascript
@@ -74,7 +72,6 @@ let mixin = brick`
 
 ## Automatic ID assignment to shadowRoot
 
-Let's create a simple button that when has the attribute disabled cannot be clicked.
 To define an intrinsic ID one can use the symbol prefix **#-** in a string before the ID name, like this:
 
 ```javascript
@@ -85,7 +82,7 @@ let mixin = brick`
 dfn("button-x",class extends mixin(HTMLElement){
 	constructor(){
 	    super();
-	    this.onclick = this.ids.btn.onclick; 
+	    this.ids.btn.onclick = this.my_onclick_function; 
 	}
 });
 
@@ -93,3 +90,53 @@ dfn("button-x",class extends mixin(HTMLElement){
 
 Here **ids** is an object that has been automatically attached to ```this``` that will contain as key all objects names whose ID is specified as above.
 
+## Automatic reflection of atributes to properties
+
+A list of attribute can be defined to be reflected to object property. You can  add a string containing this list anywhere in the template tag. 
+This list of attribute string must follow a special formatting: **"|*"** to start the list, **"*|"** when the list is finished and **"|"** to separate items,
+like shown below. This will add a property to the custom-element that has the same name as specified in the item list. Also, when the attribute 
+is changed from HTML, or the property is changed from JS, a method is fired (if defined by you) for that specific attribute name, the function name
+is by convention the attribute name prefixed by the word "update_" as for example: **update_attributeName**. 
+If this function is not the defined the this call is ignored.
+
+```html
+
+let mixin = brick`
+	<style>
+		:host[red]{ /* once the attribute red is added to the element*/
+			background-color:red;
+		}
+		:host[green]{ /* once the attribute red is added to the element*/
+			background-color:green;
+		}
+	</style>
+	<button ${"#-btn"}> </button>
+
+	${"|* red | green *|"} <!-- Attributes names definition -->
+`;
+```
+```javascript
+dfn("button-x",class extends mixin(HTMLElement){
+	
+	update_red(new_value){
+		console.log("Attribute 'red' has changed");
+	}
+}
+```
+
+## Template generation helper
+
+**templateme** is a template generator via template literals, it uses the same syntax of **brick**, so it supports automatic ID assignment and 
+attribute to property reflection. A template is created and added to the document. Once this template is added to a brick-element then all the properties and attribute will be forwarded to it. This is usefull to share styles like a normalize for example.
+
+```javascript
+//defining the template
+let template = templateme`
+	<button ${"#-btn"}> </button>
+`;
+
+//adding the template to a brick element
+let mixin = brick`
+	${template}
+`;
+```
