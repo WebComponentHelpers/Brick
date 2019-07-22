@@ -4,7 +4,7 @@ This is a webcomponent generator, it uses string literals to generate an HTML te
 One can then add the mixin (and so the generated template) to the HTMLElement class when extending.
 
 It is inspired by [lit-element](https://github.com/Polymer/lit-element) with one big difference: it **does not include virtual-dom**.
-On my opinion web-components do not really need the complexity of a v-dom and there are many effective, light ways out there to exchange/update  data,
+It is thus very lightweight. Web-components do not really need the complexity of a v-dom and there are other effective, light ways soulution to exchange/update  data,
 for example one could use Events or you can have a look at this repo: [App-State and Data Binding Using Proxy](https://github.com/WebComponentHelpers/ImperaJS).
 
 
@@ -12,7 +12,7 @@ for example one could use Events or you can have a look at this repo: [App-State
 
  - It is **FAST and light**, less than 3kB minified (and 1kB gzip). <!--, try out the [benchmark test comparison with lit-html]().-->
  - Supports **imports of styles** and in general of ```<template>```. Gives a pattern to import shared styles (like a ```normalize```) from templates, cutting on parsing time.
- - Supports **server-side rendering** out of the box, well, web-components do.
+ - Supports **server-side rendering** out of the box, as opposed to lit-element (where because of interaction between elements is usually needed to incapsulate custom-elements one inside the other).
  - Supports automatic dom element-ID retrival, **no more shadowRoot.GetElementByID("...")**. 
  - Supports automatic reflection of atributes to properties, but is not intended to exchange rich data (like objects) see [here](https://developers.google.com/web/fundamentals/web-components/best-practices#do-not-reflect-rich-data-properties-to-attributes) for best practices.
  - Light and elegant syntax :rainbow:
@@ -97,7 +97,7 @@ This list of attribute string must follow a special formatting: **"|*"** to star
 like shown below. This will add a property to the custom-element that has the same name as specified in the item list. Also, when the attribute 
 is changed from HTML, or the property is changed from JS, a method is fired (if defined by you) for that specific attribute name, the function name
 is by convention the attribute name prefixed by the word "update_" as for example: **update_attributeName**. 
-If this function is not the defined the this call is ignored.
+If this function is not the defined then this call is ignored.
 
 ```html
 
@@ -126,8 +126,9 @@ dfn("button-x",class extends mixin(HTMLElement){
 
 ## Template generation helper
 
-**templateme** is a template generator via template literals, it uses the same syntax of **brick**, so it supports automatic ID assignment and 
-attribute to property reflection. A template is created and added to the document. Once this template is added to a brick-element then all the properties and attribute will be forwarded to it. This is usefull to share styles like a normalize for example.
+**templateme** is a template generator via tagged literals, it uses the same syntax of **brick**, so it supports automatic ID assignment and 
+attribute to property reflection. It creates automatically a template with the defined content and adds it to the document. Once this template 
+is included into a brick-element then all the properties and attribute will be forwarded to it. This is usefull to share styles like a normalize for example.
 
 ```javascript
 //defining the template
