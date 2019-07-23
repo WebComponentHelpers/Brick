@@ -3,8 +3,8 @@
 This is a webcomponent generator, it uses string literals to generate an HTML template and a mixin.
 One can then add the mixin (and so the generated template) to the HTMLElement class when extending.
 
-It is inspired by [lit-element](https://github.com/Polymer/lit-element) with one big difference: it **does not include virtual-dom**.
-It is thus very lightweight. Web-components do not really need the complexity of a v-dom and there are other effective, light ways soulution to exchange/update  data,
+It is inspired by [lit-element](https://github.com/Polymer/lit-element) with one big difference: **it does not include virtual-dom**,
+It is thus as extremely lightweight. Web-components do not really need the complexity of a v-dom and there are other effective, light soulution to exchange/update  data,
 for example one could use Events or you can have a look at this repo: [App-State and Data Binding Using Proxy](https://github.com/WebComponentHelpers/ImperaJS).
 
 
