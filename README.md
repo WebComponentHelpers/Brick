@@ -15,7 +15,7 @@ for example one could use Events or you can have a look at this repo: [App-State
  - Supports **server-side rendering** out of the box, as opposed to lit-element (where because of interaction between elements is usually needed to incapsulate custom-elements one inside the other).
  - Supports automatic dom element-ID retrival, **no more shadowRoot.GetElementByID("...")**. 
  - Supports automatic reflection of atributes to properties, but is not intended to exchange rich data (like objects) see [here](https://developers.google.com/web/fundamentals/web-components/best-practices#do-not-reflect-rich-data-properties-to-attributes) for best practices.
- - Supports inheritance from other custom-elements and configuration of shadowRoot
+ - Supports **inheritance** from other custom-elements and configuration of shadowRoot
  - Light and elegant syntax :rainbow:
 
 
@@ -44,11 +44,12 @@ Otherwise need to give the full path.
 ## Define your element
 
 ```javascript
-let mixin = brick`
+let brick_mixin = brick`
 	<h1> Hello World </h1>
 `;
 
-customElements.define("hello-x",class extends mixin(HTMLElement){});
+
+customElements.define("hello-x",class extends brick_mixin(HTMLElement){});
 // or same would be:
 // dfn("hello-x",class extends mixin(HTMLElement){});
 
@@ -64,15 +65,17 @@ let world = "World";
 let  arr = ["Hello","World"];
 
 
-let mixin = brick`
+let brick_mixin = brick`
         <h1> Hello ${world} </h1>
 	<h1> ${arr} </h1>
 	${template_previosly_defined}
 `;
+
+class helloWorld extends brick_mixin(HTMLElement){}
 ```
 
 Supports shadow root configuration options:```mode:'open','closed'``` and ```delegatesFocus:true,false``` as follows:
-```
+```javascript
 let config = {
 	shadowRoot: {
 		mode: "open",    		// closed
@@ -91,6 +94,7 @@ let hello_mixin = brick`
         <h1> Hello </h1>
 `;
 
+// definition of parent class
 class onlyHello extends hello_mixin(HTMLElement){}
 
 let world_mixin = brick`
@@ -101,6 +105,7 @@ let config = {
 	inherit : true   // default false
 }
 
+// definition of child class
 class helloWorld extends world_mixin(onlyHello, config) {}
 
 ``` 
