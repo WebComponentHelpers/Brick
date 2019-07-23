@@ -15,6 +15,7 @@ for example one could use Events or you can have a look at this repo: [App-State
  - Supports **server-side rendering** out of the box, as opposed to lit-element (where because of interaction between elements is usually needed to incapsulate custom-elements one inside the other).
  - Supports automatic dom element-ID retrival, **no more shadowRoot.GetElementByID("...")**. 
  - Supports automatic reflection of atributes to properties, but is not intended to exchange rich data (like objects) see [here](https://developers.google.com/web/fundamentals/web-components/best-practices#do-not-reflect-rich-data-properties-to-attributes) for best practices.
+ - Supports inheritance from other custom-elements and configuration of shadowRoot
  - Light and elegant syntax :rainbow:
 
 
@@ -70,6 +71,39 @@ let mixin = brick`
 `;
 ```
 
+Supports shadow root configuration options:```mode:'open','closed'``` and ```delegatesFocus:true,false``` as follows:
+```
+let config = {
+	shadowRoot: {
+		mode: "open",    		// closed
+		delegatesFocus : false 		// true
+	}
+}
+
+class exampleComponent extends brick_mixin(HTMLElement, config){}
+
+```
+default values are **mode="open"** and **delegatesFocus=false**.
+
+Supports inheritance from another custom element by passing a configuration object as above, the template and attributes of the child class will be added to the one of the parent:
+```javascript
+let hello_mixin = brick`
+        <h1> Hello </h1>
+`;
+
+class onlyHello extends hello_mixin(HTMLElement){}
+
+let world_mixin = brick`
+        <h2> World </h1>
+`;
+
+let config = {
+	inherit : true   // default false
+}
+
+class helloWorld extends world_mixin(onlyHello, config) {}
+
+``` 
 ## Automatic ID assignment to shadowRoot
 
 To define an intrinsic ID one can use the symbol prefix **#-** in a string before the ID name, like this:
