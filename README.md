@@ -74,6 +74,8 @@ let brick_mixin = brick`
 class helloWorld extends brick_mixin(HTMLElement){}
 ```
 
+### Configure ShadowRoot
+
 Supports shadow root configuration options:```mode:'open','closed'``` and ```delegatesFocus:true,false``` as follows:
 ```javascript
 let config = {
@@ -87,6 +89,8 @@ class exampleComponent extends brick_mixin(HTMLElement, config){}
 
 ```
 default values are **mode="open"** and **delegatesFocus=false**.
+
+### Inheritance 
 
 Supports inheritance from another custom element by passing a configuration object as above, the template and attributes of the child class will be added to the one of the parent:
 ```javascript
