@@ -97,7 +97,63 @@ export default function (){
 
         });
 
+        describe('Inheritance',()=>{
+
+            let mxn_parent = brick`<h1>Hello</h1>
+                ${'|* parentprop *|'}
+            `;
+
+            let mxn_child = brick`<h2>World</h2>
+                ${'|* childprop *|'}
+            `;
+
+            class parent extends mxn_parent(HTMLElement){}
+            class child extends mxn_child(parent,{inherit:true}){
+                constructor(){
+                    super();
+                    this.updated_parent_prop = false;
+                    this.updated_child_prop = false;
+                }
+                update_parentprop(val){
+                    this.updated_parent_prop = true;
+                }
+                update_childprop(val){
+                    this.updated_child_prop = true;
+                }
+            }
+
+            customElements.define('parent-element', parent);
+            customElements.define('child-element', child);
+
+            let el_child = document.createElement("child-element");
+
+            it('Child has attribute-property reflection of parent',()=>{
+                chai.assert.equal(el_child.hasOwnProperty("parentprop"), true, "parentprop missing in child")
+                chai.assert.equal(el_child.parentprop, null, "parent property-attribute is not reflected in child, wrong value");
+                el_child.setAttribute("parentprop","hey");
+                chai.assert.equal(el_child.parentprop, "hey", "parent property-attribute is not reflected in child, wrong value");
+            });
+            it('Child has own attribute-property reflection',()=>{
+                chai.assert.equal(el_child.hasOwnProperty("childprop"), true, "childprop missing in child")
+                chai.assert.equal(el_child.childprop, null, "child property-attribute is not reflected in child, wrong value");
+                el_child.setAttribute("childprop","hey");
+                chai.assert.equal(el_child.childprop, "hey", "child property-attribute is not reflected in child, wrong value");
+
+            });
+
+            it('Child has template of parent and appended his own',()=>{
+                chai.assert.include(el_child.shadowRoot.children[0], { tagName:"H1"},  'parent template not there');
+                chai.assert.include(el_child.shadowRoot.children[1], { tagName:"H2"},  'child template not there');
+                chai.assert.equal(el_child.shadowRoot.children.length,2,"too many elements");
+            });
+
+            it('Observes parent and child props and run the on_update function',()=>{
+                chai.assert.equal(el_child.updated_child_prop, true, "update child prop function not called");
+                chai.assert.equal(el_child.updated_parent_prop, true,"update parent prop function not called");
+            });
         
+        });
+
         describe('Performance',()=>{
             it('one cycle in less than 75mus',()=>{
                 

@@ -108,6 +108,12 @@ export function templateme(strings, ...keys) {
     Object.defineProperty(out_template, '_IDs', read_inputs.IDs);
     return out_template;
 }
+/**
+ * Custom-element mixing generator, to be used as a template literal. It returns a mixin function that takes two arguments.
+ * @param class - the base class to which apply the mixin, can be HTMLElement or can inherit from a custom element
+ * @param configs - object with structure {inherit:boolean, shadowRoot: { mode:string, delegatesFocus:boolean } }
+ * default values of configs are inherit:false, mode:open, delegatesFocus:false.
+ */
 export function brick(strings, ...keys) {
     let litOut = litRead(strings, ...keys);
     let tmpl = document.createElement('template');
@@ -145,18 +151,19 @@ export function brick(strings, ...keys) {
             }
             this.shadowRoot.qs = this.shadowRoot.querySelector;
             this.swr = this.shadowRoot;
-            // already called in super if inheriting from a brick
-            if (!(config && config.inherit))
-                this.setProps();
+            // set the attribute-property reflection, does not re-define props in case of inheritance
+            this.setProps();
         }
         setProps() {
             // define getters and setters for list of properties
             // in case of inheritance does not re-define props
-            for (let prop in litOut.props) {
-                Object.defineProperty(this, prop, {
-                    set: (val) => { this.setAttribute(prop, val); },
-                    get: () => { return this.getAttribute(prop); }
-                });
+            for (let prop in this._props) {
+                if (!this.hasOwnProperty(prop)) {
+                    Object.defineProperty(this, prop, {
+                        set: (val) => { this.setAttribute(prop, val); },
+                        get: () => { return this.getAttribute(prop); }
+                    });
+                }
             }
         }
         /*
