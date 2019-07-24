@@ -70,6 +70,13 @@ export function litRead(strings, ...keys) {
             // case of a template
             else if ('tagName' in key && key.tagName === 'TEMPLATE') {
                 output.imports.push(key);
+                // in case template is from templateme import IDs and props
+                if (key.hasOwnProperty("_props") && key._props != null && key._props != undefined)
+                    for (let p_name in key._props) {
+                        this._props[p_name] = key._props[p_name];
+                    }
+                if (key.hasOwnProperty("_IDs") && key._IDs != null && key._IDs != undefined)
+                    output.IDs.concat(key._IDs);
             }
             else
                 inputError(key);
@@ -109,7 +116,7 @@ export function templateme(strings, ...keys) {
     return out_template;
 }
 /**
- * Custom-element mixing generator, to be used as a template literal. It returns a mixin function that takes two arguments.
+ * Custom-element mixing generator, to be used as a tagged literal. It returns a mixin function that takes two arguments.
  * @param class - the base class to which apply the mixin, can be HTMLElement or can inherit from a custom element
  * @param configs - object with structure {inherit:boolean, shadowRoot: { mode:string, delegatesFocus:boolean } }
  * default values of configs are inherit:false, mode:open, delegatesFocus:false.
