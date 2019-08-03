@@ -142,16 +142,20 @@ export function templateme(strings:TemplateStringsArray, ...keys:Array<any>) : H
 
 
 interface configs{
-    shadowRoot?:{mode:string,delegatesFocus:boolean }
+    shadowRoot?:{mode:ShadowRootMode,delegatesFocus?:boolean }
     inherit?:boolean
 }
+
+
+type Constructor<T = HTMLElement> = new (...args: any[]) => T;
+type TBrick = Constructor & {observedAttributes?:string[] }
 /**
  * Custom-element mixing generator, to be used as a tagged literal. It returns a mixin function that takes two arguments.
  * @param class - the base class to which apply the mixin, can be HTMLElement or can inherit from a custom element  
  * @param configs - object with structure {inherit:boolean, shadowRoot: { mode:string, delegatesFocus:boolean } }
  * default values of configs are inherit:false, mode:open, delegatesFocus:false.
  */
-export function brick(strings:TemplateStringsArray, ...keys:Array<any>) : Function {
+export function brick(strings:TemplateStringsArray, ...keys:Array<any>) {
 
     let litOut = litRead(strings,...keys);
     let tmpl = document.createElement('template');
@@ -160,21 +164,25 @@ export function brick(strings:TemplateStringsArray, ...keys:Array<any>) : Functi
 
     // Typescript: FIXME, would be nice to return at least an HTMLElement, 
     // but cannot make it work
-    return (BaseClass:any,config:configs) : any => class extends BaseClass {
+    return function <TBase extends TBrick>(BaseClass:TBase,config?:configs) { 
+        return class extends BaseClass {
 
-        ids:{[key:string]: Element};
+        ids:{[key:string]: HTMLElement};
         swr:ShadowRoot;
         _props:propObject;
+        qs:ParentNode["querySelector"];
+        // maybe not best solution FIXME, but otherwise complain with this['update_'+name]
+        [key:string]:any; 
 
         static get observedAttributes() {
-            let arr = [];
+            let arr:string[] = [];
             if(super.observedAttributes){
                 arr = super.observedAttributes;
             }
             return arr.concat(Object.keys(litOut.props));
         }
 
-        constructor(){
+        constructor(...args:any[]){
             super();
 
             // copy props, this works also in case of inheritance
@@ -184,7 +192,7 @@ export function brick(strings:TemplateStringsArray, ...keys:Array<any>) : Functi
             }
             
             // attach shadow or inherit shadow
-            let conf = (config && config.shadowRoot) ? config.shadowRoot : {mode:'open', delegatesFocus:false} ;
+            let conf = (config && config.shadowRoot) ? config.shadowRoot : {mode:<ShadowRootMode>'open', delegatesFocus:false} ;
             let shadowRoot = (config && config.inherit) ? this.shadowRoot : this.attachShadow(conf);
 
             for (let tmpl of litOut.imports) {
@@ -197,7 +205,7 @@ export function brick(strings:TemplateStringsArray, ...keys:Array<any>) : Functi
                 this.ids[id] = shadowRoot.getElementById(id);
             }
 
-            this.shadowRoot.qs = this.shadowRoot.querySelector;
+            this.qs = this.shadowRoot.querySelector;
             this.swr = this.shadowRoot;
 
             // set the attribute-property reflection, does not re-define props in case of inheritance
@@ -239,6 +247,7 @@ export function brick(strings:TemplateStringsArray, ...keys:Array<any>) : Functi
         
 
     };
+}
         
 }
     

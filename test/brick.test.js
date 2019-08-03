@@ -48,7 +48,7 @@ export default function (){
                 chai.assert.equal(el.shadowRoot.children.length, 6 ,  'elements number differ');
 
                 chai.assert.property(el,"swr", 'has shortcut for shadow');
-                chai.assert.property(el.shadowRoot,"qs", 'has shortcut for query selector');
+                chai.assert.property(el,"qs", 'has shortcut for query selector');
                 chai.assert.property(el,"ids", 'has shortcut for ids');
             }); 
         });

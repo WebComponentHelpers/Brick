@@ -128,68 +128,70 @@ export function brick(strings, ...keys) {
     litOut.imports.push(tmpl);
     // Typescript: FIXME, would be nice to return at least an HTMLElement, 
     // but cannot make it work
-    return (BaseClass, config) => class extends BaseClass {
-        static get observedAttributes() {
-            let arr = [];
-            if (super.observedAttributes) {
-                arr = super.observedAttributes;
-            }
-            return arr.concat(Object.keys(litOut.props));
-        }
-        constructor() {
-            super();
-            // copy props, this works also in case of inheritance
-            if (!this._props)
-                this._props = {};
-            for (let key in litOut.props) {
-                this._props[key] = litOut.props[key];
-            }
-            // attach shadow or inherit shadow
-            let conf = (config && config.shadowRoot) ? config.shadowRoot : { mode: 'open', delegatesFocus: false };
-            let shadowRoot = (config && config.inherit) ? this.shadowRoot : this.attachShadow(conf);
-            for (let tmpl of litOut.imports) {
-                shadowRoot.appendChild(tmpl.content.cloneNode(true));
-            }
-            // attach elements IDs
-            if (!this.ids)
-                this.ids = {};
-            for (let id of litOut.IDs) {
-                this.ids[id] = shadowRoot.getElementById(id);
-            }
-            this.shadowRoot.qs = this.shadowRoot.querySelector;
-            this.swr = this.shadowRoot;
-            // set the attribute-property reflection, does not re-define props in case of inheritance
-            this.setProps();
-        }
-        setProps() {
-            // define getters and setters for list of properties
-            // in case of inheritance does not re-define props
-            for (let prop in this._props) {
-                if (!this.hasOwnProperty(prop)) {
-                    Object.defineProperty(this, prop, {
-                        set: (val) => { this.setAttribute(prop, val); },
-                        get: () => { return this.getAttribute(prop); }
-                    });
+    return function (BaseClass, config) {
+        return class extends BaseClass {
+            static get observedAttributes() {
+                let arr = [];
+                if (super.observedAttributes) {
+                    arr = super.observedAttributes;
                 }
+                return arr.concat(Object.keys(litOut.props));
             }
-        }
-        /*
-        /// SUPPORT FOR DEFAULT values on attributes REVOKED. Attributes are behaviours, defaults make no sense.
-            connectedCallback() {
-                if(super['connectedCallback'] !==  undefined ) super.connectedCallback();
-    
+            constructor(...args) {
+                super();
+                // copy props, this works also in case of inheritance
+                if (!this._props)
+                    this._props = {};
+                for (let key in litOut.props) {
+                    this._props[key] = litOut.props[key];
+                }
+                // attach shadow or inherit shadow
+                let conf = (config && config.shadowRoot) ? config.shadowRoot : { mode: 'open', delegatesFocus: false };
+                let shadowRoot = (config && config.inherit) ? this.shadowRoot : this.attachShadow(conf);
+                for (let tmpl of litOut.imports) {
+                    shadowRoot.appendChild(tmpl.content.cloneNode(true));
+                }
+                // attach elements IDs
+                if (!this.ids)
+                    this.ids = {};
+                for (let id of litOut.IDs) {
+                    this.ids[id] = shadowRoot.getElementById(id);
+                }
+                this.qs = this.shadowRoot.querySelector;
+                this.swr = this.shadowRoot;
+                // set the attribute-property reflection, does not re-define props in case of inheritance
+                this.setProps();
+            }
+            setProps() {
+                // define getters and setters for list of properties
+                // in case of inheritance does not re-define props
                 for (let prop in this._props) {
-                    if (!this.hasAttribute(prop) && Array.isArray(this._props[prop]) ) this.setAttribute(prop, this._props[prop][1]);
+                    if (!this.hasOwnProperty(prop)) {
+                        Object.defineProperty(this, prop, {
+                            set: (val) => { this.setAttribute(prop, val); },
+                            get: () => { return this.getAttribute(prop); }
+                        });
+                    }
                 }
             }
-        */
-        attributeChangedCallback(name, oldVal, newVal) {
-            const hasValue = (newVal !== null);
-            const updateMe = (!hasValue || oldVal !== newVal);
-            if (updateMe && this._props.hasOwnProperty(name) && this['update_' + name] !== undefined) {
-                this['update_' + name](newVal);
+            /*
+            /// SUPPORT FOR DEFAULT values on attributes REVOKED. Attributes are behaviours, defaults make no sense.
+                connectedCallback() {
+                    if(super['connectedCallback'] !==  undefined ) super.connectedCallback();
+        
+                    for (let prop in this._props) {
+                        if (!this.hasAttribute(prop) && Array.isArray(this._props[prop]) ) this.setAttribute(prop, this._props[prop][1]);
+                    }
+                }
+            */
+            attributeChangedCallback(name, oldVal, newVal) {
+                const hasValue = (newVal !== null);
+                const updateMe = (!hasValue || oldVal !== newVal);
+                if (updateMe && this._props.hasOwnProperty(name) && this['update_' + name] !== undefined) {
+                    this['update_' + name](newVal);
+                }
             }
-        }
+        };
     };
 }
 // some shortcuts:
