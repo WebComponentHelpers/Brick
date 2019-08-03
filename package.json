@@ -9,10 +9,14 @@
   "directories": {
     "test": "test"
   },
+  "files": [
+    "brick-element.js",
+    "src/brick-element.ts"
+  ],
   "scripts": {
     "test": "tsc; firefox --new-tab http://127.0.0.1:8081/test/ ; http-server -p 8081 ",
     "build": "tsc",
-    "watch": "tsc -t es2018 --outDir build/ -w src/brick.ts "
+    "watch": "tsc -t es2018 --outDir ./ -w src/brick-element.ts "
   },
   "repository": "brick-element",
   "keywords": [
