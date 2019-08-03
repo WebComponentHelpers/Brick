@@ -1,4 +1,4 @@
-import {templateme} from '../build/brick.js';
+import {templateme} from '../brick-element.js';
 
 document.templateme = templateme;
 

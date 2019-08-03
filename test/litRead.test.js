@@ -1,4 +1,4 @@
-import {litRead} from '../build/brick.js';
+import {litRead} from '../brick-element.js';
 
 document.litRead = litRead;
 

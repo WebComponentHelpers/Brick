@@ -1,4 +1,4 @@
-import {brick} from '../build/brick.js'
+import {brick} from '../brick-element.js'
 
 
 

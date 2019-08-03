@@ -4,12 +4,13 @@
         "target": "es2018",
         "noImplicitAny": true,
         "allowJs": true,
-	"outDir": "build/",
+	    "outDir": "./",
         "sourceMap": false
     },
 
     "include": [
         "src/*"
-    ]
+    ],
+    "exclude": []
 }
 

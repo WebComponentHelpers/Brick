@@ -3,17 +3,18 @@
   "version": "0.2.0",
   "sideEffects": false,
   "description": "Custom element generator using tagged literals",
-  "main": "build/brick.js",
+  "main": "brick-element.js",
   "types": "src/brick.ts",
+  "module":"brick-element.js",
+  "directories": {
+    "test": "test"
+  },
   "scripts": {
     "test": "tsc; firefox --new-tab http://127.0.0.1:8081/test/ ; http-server -p 8081 ",
     "build": "tsc",
     "watch": "tsc -t es2018 --outDir build/ -w src/brick.ts "
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/WebComponentHelpers/Brick.git"
-  },
+  "repository": "brick-element",
   "keywords": [
     "web-components",
     "webcomponents",
