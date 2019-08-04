@@ -97,6 +97,70 @@ export default function (){
 
         });
 
+        let mixin_s = brick`
+                    <h1>
+                        <slot name="test"></slot>
+                    </h1>
+                    <h2>
+                        <slot></slot>
+                    </h2>
+                    <h3>
+                        <slot name="s_test" type="span"></slot>
+                    </h3>
+                    ${"|* goya *|"}
+            `;
+            customElements.define('test-slot',class extends mixin_s(HTMLElement){});
+            var slot_test = document.createElement("test-slot");
+
+        describe('Slots',()=>{
+            
+            let el0 = document.createElement("span");
+            el0.innerText = "zero"; el0.setAttribute("slot","test");
+            let el1 = document.createElement("span");
+            el1.innerText = "one";
+            let el2 = document.createElement("span");
+            el2.innerText = "two"; el2.setAttribute("slot","s_test");
+            slot_test.appendChild(el0);
+            slot_test.appendChild(el1);
+            slot_test.appendChild(el2);
+            
+            it('Reflect only slots that have type',()=>{
+                chai.assert.property(slot_test,"s_test", "does not have property");
+                chai.assert.equal(Array.isArray(slot_test.s_test),false,"Does not contain ONLY 1 slot element");
+                chai.assert.include(slot_test.s_test, {tagName:"SPAN",innerText:"two"}, "is not a span");
+            });
+            it('Set value to slot',()=>{
+                slot_test.s_test = {innerText:"amaizing"};
+                chai.assert.include(slot_test.s_test, {tagName:"SPAN",innerText:"amaizing"}, "Did not set value");
+                
+                slot_test.s_test = [{innerText:"amaizing"},{innerText:"spiderman"}];
+                chai.assert.equal(slot_test.s_test.length, 2, "Not Two items in list");
+                chai.assert.include(slot_test.s_test[0], {tagName:"SPAN",innerText:"amaizing"}, "Did not set value for list");
+                chai.assert.include(slot_test.s_test[1], {tagName:"SPAN",innerText:"spiderman"}, "Did not set value for list 2");
+            });
+        });
+
+        describe('Data ingestion',()=>{
+            it('Ingest data properly to attribute',()=>{
+                let dat = {goya:"ciao"};
+                slot_test.ingestData(dat);
+                chai.assert.equal(slot_test.goya,'ciao', "does not set attribute");
+            });
+
+            it('Ingest data to slots',()=>{
+                let dat = {s_test:[{innerText:"amaizing1"},{innerText:"spiderman1"}]};
+                slot_test.ingestData(dat);
+                chai.assert.equal(slot_test.s_test.length, 2, "Not Two items in list");
+                chai.assert.include(slot_test.s_test[0], {tagName:"SPAN",innerText:"amaizing1"}, "Did not set value for list");
+                chai.assert.include(slot_test.s_test[1], {tagName:"SPAN",innerText:"spiderman1"}, "Did not set value for list 2");
+            });
+            it('Ingest to all',()=>{
+                let dat = {s_test:{innerText:"amaizing3"},goya:"medusa" };
+                slot_test.ingestData(dat);
+                chai.assert.equal(slot_test.goya,'medusa', "does not set attribute");
+                chai.assert.include(slot_test.s_test, {tagName:"SPAN",innerText:"amaizing3"}, "Did not set value");
+            });
+        });
         describe('Inheritance',()=>{
 
             let mxn_parent = brick`<h1>Hello</h1>

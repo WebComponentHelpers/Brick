@@ -237,30 +237,34 @@ export function brick<InputData>(strings:TemplateStringsArray, ...keys:Array<any
                     // NOTE: does not re-define in case of inheritace
                     if(name ==="" || type==="" || name === null || this.hasOwnProperty(name)) continue;
                     Object.defineProperty(this, name, {
-                        set: (data:object[]) => { 
-                            let temp  = this.swr.querySelectorAll(`[slot="${name}"]`);
+                        set: (data:object[]|object) => { 
+                            let temp  = this.querySelectorAll(`[slot=${name}]`);
                             // empty all
                             for(let t of temp){
                                 this.removeChild(t);
                             }
                             // re-create
-                            for(let obj of data){
+                            let array_data = [];
+                            if(Array.isArray(data)) array_data = data;
+                            else array_data.push(data);
+                            for(let obj of array_data){
                                 let el = document.createElement(type)
                                 el.setAttribute("slot",name);
                                 for(let key in obj){
-                                    if(el.hasOwnProperty(key)){
+                                    // @ts-ignore  FIXME
+                                    if(typeof(el[key]) !== "undefined"){
                                         // @ts-ignore  FIXME
                                         el[key] = obj[key];
                                     }
                                     else {
-                                        console.log("EROR: key '",key,"' not assignable to class ", el.className); 
+                                        console.log("EROR: key '",key,"' not assignable to class ", el.tagName); 
                                     }
                                 }
                                 this.appendChild(el);
                             } 
                         },
                         get: () => { 
-                            let temp  = this.swr.querySelectorAll(`[slot="${name}"]`); 
+                            let temp  = this.querySelectorAll(`[slot=${name}]`); 
                             if(temp.length === 1) return temp[0];
                             else return temp;
                         }
@@ -269,11 +273,11 @@ export function brick<InputData>(strings:TemplateStringsArray, ...keys:Array<any
             }
         }
 
-        ingest_data(input:InputData){
+        ingestData(input:InputData){
             for(let key in input){
-                if(this.hasOwnProperty(key)){
+                if(typeof(this[key]) !== "undefined"){
                     //@ts-ignore   // FIXME here not the best... would be nice to have typescript recognice keys and their types
-                    this[dat] = input[dat];
+                    this[key] = input[key];
                 }
                 else{
                     console.log("EROR: key '",key,"' not assignable to class ", this.className);

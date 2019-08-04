@@ -206,7 +206,7 @@ export default function (){
 
 
         describe('Performance',()=>{
-            it('performs 1 cycle in < 3 mus',()=>{
+            it('performs 1 cycle in < 3.5 mus',()=>{
                 let temp = document.createElement('template');
                 let n_cycles = 100000;
                 let start = performance.now();
@@ -218,7 +218,7 @@ export default function (){
                     ${'|* ciao *|'}`;
                 }
                 let tot = performance.now() - start;
-                chai.assert.isBelow( tot / n_cycles * 1000 , 3, 'time larger than expected');
+                chai.assert.isBelow( tot / n_cycles * 1000 , 3.5, 'time larger than expected');
                 console.log('performs '+ n_cycles + ' in ' + tot + ' ms');
             });
         });

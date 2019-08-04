@@ -161,6 +161,8 @@ export function brick(strings, ...keys) {
                 this.swr = this.shadowRoot;
                 // set the attribute-property reflection, does not re-define props in case of inheritance
                 this.setProps();
+                // define getters and setters for brick-slots, in case of inheritance does not re-define 
+                this.acquireSlots();
             }
             setProps() {
                 // define getters and setters for list of properties
@@ -171,6 +173,66 @@ export function brick(strings, ...keys) {
                             set: (val) => { this.setAttribute(prop, val); },
                             get: () => { return this.getAttribute(prop); }
                         });
+                    }
+                }
+            }
+            acquireSlots() {
+                let slots = this.swr.querySelectorAll("slot");
+                for (let s of slots) {
+                    if (s.hasAttribute("type")) {
+                        let name = s.getAttribute("name");
+                        let type = s.getAttribute("type");
+                        // NOTE: does not re-define in case of inheritace
+                        if (name === "" || type === "" || name === null || this.hasOwnProperty(name))
+                            continue;
+                        Object.defineProperty(this, name, {
+                            set: (data) => {
+                                let temp = this.querySelectorAll(`[slot=${name}]`);
+                                // empty all
+                                for (let t of temp) {
+                                    this.removeChild(t);
+                                }
+                                // re-create
+                                let array_data = [];
+                                if (Array.isArray(data))
+                                    array_data = data;
+                                else
+                                    array_data.push(data);
+                                for (let obj of array_data) {
+                                    let el = document.createElement(type);
+                                    el.setAttribute("slot", name);
+                                    for (let key in obj) {
+                                        // @ts-ignore  FIXME
+                                        if (typeof (el[key]) !== "undefined") {
+                                            // @ts-ignore  FIXME
+                                            el[key] = obj[key];
+                                        }
+                                        else {
+                                            console.log("EROR: key '", key, "' not assignable to class ", el.tagName);
+                                        }
+                                    }
+                                    this.appendChild(el);
+                                }
+                            },
+                            get: () => {
+                                let temp = this.querySelectorAll(`[slot=${name}]`);
+                                if (temp.length === 1)
+                                    return temp[0];
+                                else
+                                    return temp;
+                            }
+                        });
+                    }
+                }
+            }
+            ingestData(input) {
+                for (let key in input) {
+                    if (typeof (this[key]) !== "undefined") {
+                        //@ts-ignore   // FIXME here not the best... would be nice to have typescript recognice keys and their types
+                        this[key] = input[key];
+                    }
+                    else {
+                        console.log("EROR: key '", key, "' not assignable to class ", this.className);
                     }
                 }
             }
