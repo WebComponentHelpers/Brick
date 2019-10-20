@@ -212,6 +212,7 @@ export function brick<InputData>(strings:TemplateStringsArray, ...keys:Array<any
             this.setProps();
             // define getters and setters for brick-slots, in case of inheritance does not re-define 
             this.acquireSlots();
+            this.setRootToChilds();
         }
         
 
@@ -284,6 +285,14 @@ export function brick<InputData>(strings:TemplateStringsArray, ...keys:Array<any
                 }
             }
         }
+
+        setRootToChilds(){
+            let all = this.swr.querySelectorAll("*");
+            for(let el of all){
+                // @ts-ignore
+                el["root"] = this;
+            }
+        }
     /*
     /// SUPPORT FOR DEFAULT values on attributes REVOKED. Attributes are behaviours, defaults make no sense.
         connectedCallback() {
@@ -310,4 +319,8 @@ export function brick<InputData>(strings:TemplateStringsArray, ...keys:Array<any
     
 // some shortcuts:
 export let dfn = customElements.define.bind(customElements);
+export function ifNdef(name:string,cls:any){
+    if(!customElements.get(name)) customElements.define(name,cls);
+
+}
 
