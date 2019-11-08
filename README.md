@@ -14,7 +14,7 @@ for example one could use Events or you can have a look at this repo: [App-State
  - Supports **imports of styles** and in general of ```<template>```. Gives a pattern to import shared styles (like a ```normalize```) from templates, cutting on parsing time.
  - Supports **server-side rendering** out of the box, as opposed to lit-element (where because of interaction between elements is usually needed to incapsulate custom-elements one inside the other).
  - Supports automatic dom element-ID retrival, **no more shadowRoot.GetElementByID("...")**. 
- - Supports automatic reflection of atributes to properties, but is not intended to exchange rich data (like objects) see [here](https://developers.google.com/web/fundamentals/web-components/best-practices#do-not-reflect-rich-data-properties-to-attributes) for best practices.
+ - Supports automatic reflection of attributes to properties, but is not intended to exchange rich data (like objects) see [here](https://developers.google.com/web/fundamentals/web-components/best-practices#do-not-reflect-rich-data-properties-to-attributes) for best practices.
  - Supports **inheritance** from other custom-elements and configuration of shadowRoot
  - Light and elegant syntax :rainbow:
 
@@ -133,7 +133,7 @@ dfn("button-x",class extends mixin(HTMLElement){
 
 Here **ids** is an object that has been automatically attached to ```this``` that will contain as key all objects names whose ID is specified as above.
 
-## Automatic reflection of atributes to properties
+## Automatic reflection of attributes to properties
 
 A list of attribute can be defined to be reflected to object property. You can  add a string containing this list anywhere in the template tag. 
 This list of attribute string must follow a special formatting: **"|*"** to start the list, **"*|"** when the list is finished and **"|"** to separate items,
