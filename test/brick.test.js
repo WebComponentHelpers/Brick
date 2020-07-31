@@ -1,7 +1,6 @@
 import {brick} from '../brick-element.js'
 
 
-
 export default function (){
 
     let counter = 0;
@@ -16,6 +15,7 @@ export default function (){
     let mixin = brick`<h3>${'ciao'}</h3> ${""}
                     <h4${'#-cocco'}> Ciao</h4>
                     <h5${'#-hey'}>ciao</h5>
+                    <h5${'#-bella | innerText=updatable '}>ciao</h5>
 
                     ${style} 
                     ${[h1,h2]}
@@ -31,7 +31,6 @@ export default function (){
 
     let el = document.createElement('test-element');
 
-
     describe('Brick',()=>{
 
         describe('ShadowDom',()=>{
@@ -45,7 +44,8 @@ export default function (){
                 chai.assert.include(el.shadowRoot.children[3], { tagName:"H3"},  'child 3 fail');
                 chai.assert.include(el.shadowRoot.children[4], { tagName:"H4", id:"cocco"},  'child 4 fail');
                 chai.assert.include(el.shadowRoot.children[5], { tagName:"H5", id:'hey'},  'child 5 fail');
-                chai.assert.equal(el.shadowRoot.children.length, 6 ,  'elements number differ');
+                chai.assert.include(el.shadowRoot.children[6], { tagName:"H5", id:'bella'},  'child 6 fail');
+                chai.assert.equal(el.shadowRoot.children.length,7 ,  'elements number differ');
 
                 chai.assert.property(el,"swr", 'has shortcut for shadow');
                 chai.assert.property(el,"qs", 'has shortcut for query selector');
@@ -54,10 +54,11 @@ export default function (){
         });
 
         describe('IDs',()=>{
-            it('has ID quick reference well defined, and no more no less than 2.',()=>{
+            it('has ID quick reference well defined, and no more no less than 3.',()=>{
                 chai.assert.include(el.ids.cocco, {tagName:'H4', id:"cocco"}, 'ID reference 1 ok');
                 chai.assert.include(el.ids.hey, {tagName:'H5', id:"hey"}, 'ID reference 2 ok');
-                chai.assert.equal(Object.keys(el.ids).length, 2, 'only 2 IDs no more, no less');
+                chai.assert.include(el.ids.bella, {tagName:'H5', id:"bella"}, 'ID reference 3 ok');
+                chai.assert.equal(Object.keys(el.ids).length, 3, 'only 3 IDs no more, no less');
             });
             
         });
@@ -70,7 +71,7 @@ export default function (){
                 chai.assert.isNull(el.not_updatable,'at this point property must be null');
             });
 
-            it('Reflects properties value correctly, from JS and HTML.',()=>{
+            it('Reflects properties value correctly, from JS and HTML and autoset.',()=>{
                 chai.assert.equal(attr_value,'default', 'the attr on change has not been called.');
                 chai.assert.equal(counter, 0, 'attribute change has not been called.');
                 el.setAttribute('updatable','uhmmm');
@@ -78,24 +79,47 @@ export default function (){
                 chai.assert.equal(attr_value,'uhmmm', 'the attr on change has been called.');
                 chai.assert.equal(counter, 1, 'attribute change has been called only once');
                 chai.assert.isNull(el.not_updatable,'This must stillbe null.');
+                chai.assert.equal(el.ids.bella.innerText,'uhmmm','Autoset attribute must be set');
+                
                 el.setAttribute('not_updatable','test');
                 chai.assert.equal(el.not_updatable,'test', 'the attr reflect to property.');
                 chai.assert.equal(el.updatable,'uhmmm', 'the attr reflect to property.');
                 chai.assert.equal(attr_value,'uhmmm', 'the attr on change has been called.');
                 chai.assert.equal(counter, 1, 'attribute change has been called only once');
+                chai.assert.equal(el.ids.bella.innerText,'uhmmm','Autoset attribute must be set');
                 el.updatable = 'second';
                 chai.assert.equal(el.updatable,'second', 'the attr reflect to property.');
                 chai.assert.equal(attr_value,'second', 'the attr on change has been called.');
                 chai.assert.equal(counter, 2, 'attribute change has been called for second time');
                 chai.assert.equal(el.not_updatable,'test', 'the attr reflect to property.');
+                chai.assert.equal(el.ids.bella.innerText,'second','Autoset attribute must be set');
                 el.removeAttribute('updatable');
                 chai.assert.isNull(el.updatable,'the attr has been remover.');
                 chai.assert.isNull(attr_value,'the attr on change has been called on remove attr.');
                 chai.assert.equal(counter, 3, 'attribute change has been called for third time');
+                chai.assert.equal(el.ids.bella.innerText,'','Autoset attribute must be set');
                 chai.assert.equal(el.not_updatable,'test', 'the attr reflect to property.');
+            });
+            it('Runs the autoset properly on attribute',()=>{
+
             });
 
         });
+
+        localStorage.clear();
+        let mxn_ab = brick`
+            <h1>
+                <slot></slot>
+            </h1>
+            ${"|*nice_prop*|"}
+        `;
+        class tstCustom extends mxn_ab(HTMLElement){}
+        customElements.define('test-custom1', tstCustom);
+        let mxn_ab2 = brick`
+            ${"|*nice_prop2*|"}
+        `;
+        class PreposteRous extends mxn_ab2(tstCustom,{inherit:true}){}
+        customElements.define('test-custom',PreposteRous);
 
         let mixin_s = brick`
                     <h1>
@@ -106,14 +130,16 @@ export default function (){
                     </h2>
                     <h3>
                         <slot name="s_test" type="span"></slot>
+                        <slot name="s_custom" type="test-custom"></slot>
                     </h3>
                     ${"|* goya *|"}
             `;
             customElements.define('test-slot',class extends mixin_s(HTMLElement){});
-            var slot_test = document.createElement("test-slot");
+            
 
         describe('Slots',()=>{
-            
+            let slot_test = document.createElement("test-slot");
+
             let el0 = document.createElement("span");
             el0.innerText = "zero"; el0.setAttribute("slot","test");
             let el1 = document.createElement("span");
@@ -142,12 +168,16 @@ export default function (){
 
         describe('Data ingestion',()=>{
             it('Ingest data properly to attribute',()=>{
+                let slot_test = document.createElement("test-slot");
+
                 let dat = {goya:"ciao"};
                 slot_test.ingestData(dat);
                 chai.assert.equal(slot_test.goya,'ciao', "does not set attribute");
             });
 
             it('Ingest data to slots',()=>{
+                let slot_test = document.createElement("test-slot");
+
                 let dat = {s_test:[{innerText:"amaizing1"},{innerText:"spiderman1"}]};
                 slot_test.ingestData(dat);
                 chai.assert.equal(slot_test.s_test.length, 2, "Not Two items in list");
@@ -155,10 +185,21 @@ export default function (){
                 chai.assert.include(slot_test.s_test[1], {tagName:"SPAN",innerText:"spiderman1"}, "Did not set value for list 2");
             });
             it('Ingest to all',()=>{
+                let slot_test = document.createElement("test-slot");
+
                 let dat = {s_test:{innerText:"amaizing3"},goya:"medusa" };
                 slot_test.ingestData(dat);
                 chai.assert.equal(slot_test.goya,'medusa', "does not set attribute");
                 chai.assert.include(slot_test.s_test, {tagName:"SPAN",innerText:"amaizing3"}, "Did not set value");
+            });
+            it('Slot type is custom-element',()=>{
+                let slot_test = document.createElement("test-slot");
+
+                let dat = {s_custom:[{innerText:"amaizing3", nice_prop:"bella"}]};
+                slot_test.ingestData(dat);
+                chai.assert.equal(slot_test.s_custom.nice_prop,'bella', "does not set attribute");
+                chai.assert.include(slot_test.s_custom, {tagName:"TEST-CUSTOM",innerText:"amaizing3"}, "Did not set value");
+                console.log(slot_test);
             });
         });
         describe('Inheritance',()=>{

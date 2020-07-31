@@ -16,7 +16,7 @@ function inputError(input) {
 }
 export function litRead(strings, ...keys) {
     let output;
-    output = { template: "", props: {}, imports: [], IDs: [] };
+    output = { template: "", props: {}, imports: [], IDs: [], autoset: {} };
     if (strings.length <= keys.length)
         throw Error('Improper parameter size.');
     if (strings.length === 1) {
@@ -34,20 +34,34 @@ export function litRead(strings, ...keys) {
         if (typeof (key) === 'string') {
             let trimmed = key;
             trimmed.trim();
-            // case of and ID
+            // case of and ID and prop autoassign
             if (trimmed[0] === "#" && trimmed[1] === "-") {
-                temp_str += ` id="${trimmed.substring(2)}" `;
-                output.IDs.push(trimmed.substring(2));
+                let id = trimmed.substring(2);
+                if (trimmed.includes("|")) {
+                    let auto_set_props = trimmed.split("|");
+                    id = auto_set_props[0].trim().substring(2);
+                    for (let i = 1; i < auto_set_props.length; i++) {
+                        let prop = auto_set_props[i].split("=");
+                        if (prop.length !== 2 || prop[0].trim() === "" || prop[1].trim() === "")
+                            continue;
+                        // setting pattern: {root_prop : { id : target_prop }
+                        if (!output.autoset.hasOwnProperty(prop[1].trim()))
+                            output.autoset[prop[1].trim()] = {};
+                        output.autoset[prop[1].trim()][id] = prop[0].trim();
+                    }
+                }
+                temp_str += ` id="${id}" `;
+                output.IDs.push(id);
             }
-            // case of an attribute
+            // case of an attribute or property
             else if (trimmed.slice(0, 2) === '|*' && trimmed.slice(-2) === '*|') {
                 let no_space = trimmed.replace(/\s/g, '');
                 let properties = no_space.slice(2, -2).split('|');
                 for (let p of properties) {
-                    if (p.includes('-b'))
-                        output.props[p.replace(/\-b/g, '')] = 'bool';
+                    if (p.includes('!'))
+                        output.props[p.replace(/!/g, '')] = 'property';
                     else
-                        output.props[p] = 'string';
+                        output.props[p] = 'attribute';
                 }
             }
             // case of expression or string
@@ -130,13 +144,6 @@ export function brick(strings, ...keys) {
     // but cannot make it work
     return function (BaseClass, config) {
         return class extends BaseClass {
-            static get observedAttributes() {
-                let arr = [];
-                if (super.observedAttributes) {
-                    arr = super.observedAttributes;
-                }
-                return arr.concat(Object.keys(litOut.props));
-            }
             constructor(...args) {
                 super();
                 // copy props, this works also in case of inheritance
@@ -144,6 +151,12 @@ export function brick(strings, ...keys) {
                     this._props = {};
                 for (let key in litOut.props) {
                     this._props[key] = litOut.props[key];
+                }
+                // copy autosets, this works also in case of inheritance
+                if (!this._autoset)
+                    this._autoset = {};
+                for (let key in litOut.autoset) {
+                    this._autoset[key] = litOut.autoset[key];
                 }
                 // attach shadow or inherit shadow
                 let conf = (config && config.shadowRoot) ? config.shadowRoot : { mode: 'open', delegatesFocus: false };
@@ -159,21 +172,53 @@ export function brick(strings, ...keys) {
                 }
                 this.qs = this.shadowRoot.querySelector;
                 this.swr = this.shadowRoot;
-                // set the attribute-property reflection, does not re-define props in case of inheritance
+                // set the attribute-property reflection and local setters, does not re-define attributes in case of inheritance
                 this.setProps();
+                // set Automatic bind to functions
+                this.setFuncBind();
                 // define getters and setters for brick-slots, in case of inheritance does not re-define 
                 this.acquireSlots();
                 this.setRootToChilds();
             }
+            static get observedAttributes() {
+                let arr = [];
+                if (super.observedAttributes) {
+                    arr = super.observedAttributes;
+                }
+                return arr.concat(Object.keys(litOut.props).filter(x => litOut.props[x] === "attribute"));
+            }
             setProps() {
                 // define getters and setters for list of properties
                 // in case of inheritance does not re-define props
-                for (let prop in this._props) {
-                    if (!this.hasOwnProperty(prop)) {
-                        Object.defineProperty(this, prop, {
-                            set: (val) => { this.setAttribute(prop, val); },
-                            get: () => { return this.getAttribute(prop); }
-                        });
+                for (const [prop, type] of Object.entries(this._props)) {
+                    if (!this.hasOwnProperty(prop) && !this.hasOwnProperty("_" + prop)) {
+                        if (type === "attribute") {
+                            Object.defineProperty(this, prop, {
+                                set: (val) => { this.setAttribute(prop, val); },
+                                get: () => { return this.getAttribute(prop); }
+                            });
+                        }
+                        else if (type === "property") {
+                            this["_" + prop] = undefined;
+                            Object.defineProperty(this, prop, {
+                                set: (val) => {
+                                    this["_" + prop] = val;
+                                    this.autosetTargetProps(prop, val);
+                                },
+                                get: () => { return this["_" + prop]; }
+                            });
+                        }
+                    }
+                }
+            }
+            setFuncBind() {
+                for (const [prop, obj] of Object.entries(this._autoset)) {
+                    if (!this._props.hasOwnProperty(prop) && typeof (this[prop]) === "function") {
+                        for (const [id, target] of Object.entries(obj)) {
+                            // @ts-ignore
+                            if (this.ids.hasOwnProperty(id))
+                                this.ids[id][target] = this[prop].bind(this);
+                        }
                     }
                 }
             }
@@ -244,21 +289,24 @@ export function brick(strings, ...keys) {
                     el["root"] = this;
                 }
             }
-            /*
-            /// SUPPORT FOR DEFAULT values on attributes REVOKED. Attributes are behaviours, defaults make no sense.
-                connectedCallback() {
-                    if(super['connectedCallback'] !==  undefined ) super.connectedCallback();
-        
-                    for (let prop in this._props) {
-                        if (!this.hasAttribute(prop) && Array.isArray(this._props[prop]) ) this.setAttribute(prop, this._props[prop][1]);
-                    }
-                }
-            */
             attributeChangedCallback(name, oldVal, newVal) {
                 const hasValue = (newVal !== null);
                 const updateMe = (!hasValue || oldVal !== newVal);
-                if (updateMe && this._props.hasOwnProperty(name) && this['update_' + name] !== undefined) {
-                    this['update_' + name](newVal);
+                if (updateMe && this._props.hasOwnProperty(name)) {
+                    this.autosetTargetProps(name, newVal);
+                    if (this['update_' + name] !== undefined)
+                        this['update_' + name](newVal);
+                }
+            }
+            autosetTargetProps(name, newVal) {
+                if (this._autoset.hasOwnProperty(name)) {
+                    for (const [id, prop] of Object.entries(this._autoset[name])) {
+                        //@ts-ignore
+                        if (this.ids.hasOwnProperty(id) && typeof (this.ids[id][prop]) !== "undefined") {
+                            //@ts-ignore
+                            this.ids[id][prop] = newVal;
+                        }
+                    }
                 }
             }
         };

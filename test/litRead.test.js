@@ -21,6 +21,7 @@ export default function (){
                 chai.assert.deepEqual(out.IDs, [] , 'IDs is empty ');
                 chai.assert.deepEqual(out.imports,[], 'imports is not empty ');
                 chai.assert.deepEqual(out.props,{}, 'props is empty ');
+                chai.assert.deepEqual(out.autoset,{}, 'props is empty ');
             });
         });
 
@@ -43,6 +44,7 @@ export default function (){
                 chai.assert.deepEqual(out.IDs, [] , 'IDs is empty ');
                 chai.assert.deepEqual(out.props,{}, 'props is empty ');
                 chai.assert.deepEqual(out.imports,[], 'imports is not empty ');
+                chai.assert.deepEqual(out.autoset,{}, 'props is empty ');
 
             });
         });
@@ -64,6 +66,7 @@ export default function (){
                 chai.assert.deepEqual(out.IDs, [] , 'IDs is empty ');
                 chai.assert.deepEqual(out.imports,[], 'imports is not empty ');
                 chai.assert.deepEqual(out.props,{}, 'props is empty ');
+                chai.assert.deepEqual(out.autoset,{}, 'props is empty ');
             });
             
             let div = document.createElement('div');
@@ -89,6 +92,7 @@ export default function (){
                 chai.assert.typeOf(out.template, 'string', 'template type is a string ');
                 chai.assert.isArray(out.IDs, 'IDs are array ');
                 chai.assert.typeOf(out.props, 'object', 'props is object ');
+                chai.assert.typeOf(out.autoset, 'object', 'autoset is object ');
             });
             
             it('Sanity check on output value ', function () {
@@ -96,6 +100,25 @@ export default function (){
                 chai.assert.deepEqual(out.IDs, ["bella","ciao"] , 'IDs has two strings ');
                 chai.assert.deepEqual(out.imports,[], 'imports is empty ');
                 chai.assert.deepEqual(out.props,{}, 'props is empty ');
+                chai.assert.deepEqual(out.autoset,{}, 'autoset is empty ');
+            });
+        });
+
+        describe('ID and autoset prop',()=>{
+            let out = litRead`<h1 ${'#-bella | hola=hermano | nogood = | noope '}></h1> <span ${'#-ciao'}> </span>`;
+            it('sanity check on output types ',()=>{
+                chai.assert.typeOf(out.template, 'string', 'template type is a string ');
+                chai.assert.isArray(out.IDs, 'IDs are array ');
+                chai.assert.typeOf(out.autoset, 'object', 'autoset is object ');
+                chai.assert.typeOf(out.props, 'object', 'props is object ');
+            });
+            
+            it('Sanity check on output value ', function () {
+                chai.assert.equal(out.template,'<h1  id="bella" ></h1> <span  id="ciao" > </span>', 'template ');
+                chai.assert.deepEqual(out.IDs, ["bella","ciao"] , 'IDs has two strings ');
+                chai.assert.deepEqual(out.imports,[], 'imports is empty ');
+                chai.assert.deepEqual(out.props,{}, 'props is empty ');
+                chai.assert.deepEqual(out.autoset,{"hermano":{"bella":"hola"}}, 'autoset is not empty ');
             });
         });
         
@@ -115,12 +138,14 @@ export default function (){
                 chai.assert.deepEqual(out.IDs, [] , 'IDs is empty ');
                 chai.assert.deepEqual(out.imports, [test], 'imports ');
                 chai.assert.deepEqual(out.props,{}, 'props is empty ');
+                chai.assert.deepEqual(out.autoset,{}, 'autoset is empty ');
             });
 
             it('List of imports',()=>{
                 chai.assert.equal(out_list.template,' <h1></h1>', 'template ');
                 chai.assert.deepEqual(out_list.IDs, [] , 'IDs is empty ');
                 chai.assert.deepEqual(out_list.imports, [temp,test2], 'imports ');
+                chai.assert.deepEqual(out.autoset,{}, 'autoset is empty ');
                 chai.assert.deepEqual(out_list.props,{}, 'props is empty ');
             });
         });
@@ -129,19 +154,19 @@ export default function (){
                 let out0 = litRead`<h1></h1> 
                 ${'|*ciao*|'}`;
                let out1 = litRead`<h1></h1> 
-                ${'|* ciao -b *|'}`;
+                ${'|* !ciao *|'}`;
                 let out2 = litRead`<h1></h1> 
-                ${'|* ciao | zuzzo -b | peppo *|'}`;
+                ${'|* ciao | !zuzzo | peppo *|'}`;
                 let out3 = litRead`<h1></h1> 
                 ${`|* ciao 
-                   | zuzzo - b 
+                   | !zuzzo  
                    | peppo *|`}`;
 
                 
-                chai.assert.deepEqual(out0.props, {'ciao':'string'}, 'prop fail identity string' );
-                chai.assert.deepEqual(out1.props, {'ciao':'bool'}, 'prop fail identity bool' );
-                chai.assert.deepEqual(out2.props,{'ciao': 'string',zuzzo : 'bool',peppo :'string'} , 'prop complex fail identity' );
-                chai.assert.deepEqual(out3.props,{'ciao': 'string',zuzzo : 'bool',peppo :'string'} , 'prop multiline fail identity' );
+                chai.assert.deepEqual(out0.props, {'ciao':'attribute'}, 'prop fail identity string' );
+                chai.assert.deepEqual(out1.props, {'ciao':'property'}, 'prop fail identity bool' );
+                chai.assert.deepEqual(out2.props,{'ciao': 'attribute',zuzzo : 'property',peppo :'attribute'} , 'prop complex fail identity' );
+                chai.assert.deepEqual(out3.props,{'ciao': 'attribute',zuzzo : 'property',peppo :'attribute'} , 'prop multiline fail identity' );
                 chai.assert.deepEqual(out2.template, '<h1></h1> \n                ', 'template' );
                 chai.assert.deepEqual(out2.IDs, [], 'IDs must be empty' );
                 chai.assert.deepEqual(out2.imports, [], 'imports must be empty' );
@@ -198,7 +223,7 @@ export default function (){
                 let str = '\n                <h1>ciao</h1> \n                <h2 id="cocco" > </h2>\n                \n                ';
                 chai.assert.equal(out0.template, str,'template');
                 chai.assert.deepEqual(out0.IDs, ["cocco"],'IDs');
-                chai.assert.deepEqual(out0.props, {ciao:'string'},'props');
+                chai.assert.deepEqual(out0.props, {ciao:'attribute'},'props');
                 chai.assert.deepEqual(out0.imports, [temp],'props');
 
             });
