@@ -130,13 +130,6 @@ export function brick(strings, ...keys) {
     // but cannot make it work
     return function (BaseClass, config) {
         return class extends BaseClass {
-            static get observedAttributes() {
-                let arr = [];
-                if (super.observedAttributes) {
-                    arr = super.observedAttributes;
-                }
-                return arr.concat(Object.keys(litOut.props));
-            }
             constructor(...args) {
                 super();
                 // copy props, this works also in case of inheritance
@@ -164,6 +157,13 @@ export function brick(strings, ...keys) {
                 // define getters and setters for brick-slots, in case of inheritance does not re-define 
                 this.acquireSlots();
                 this.setRootToChilds();
+            }
+            static get observedAttributes() {
+                let arr = [];
+                if (super.observedAttributes) {
+                    arr = super.observedAttributes;
+                }
+                return arr.concat(Object.keys(litOut.props));
             }
             setProps() {
                 // define getters and setters for list of properties

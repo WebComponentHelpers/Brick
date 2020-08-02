@@ -33,8 +33,8 @@
   "homepage": "https://github.com/WebComponentHelpers/Brick#readme",
   "devDependencies": {
     "chai": "^4.2.0",
-    "http-server": "^0.11.1",
-    "mocha": "^5.2.0",
+    "http-server": "^0.12.3",
+    "mocha": "^8.1.0",
     "ts-loader": "^5.4.5",
     "typescript": "^3.5.3",
     "webpack": "^4.39.1",
