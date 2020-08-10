@@ -1,7 +1,7 @@
 const path = require('path');
 
 module.exports = {
-  entry: './src/brick.ts',
+  entry: './src/brick-element.ts',
 
   module: {
     rules: [
@@ -17,7 +17,7 @@ module.exports = {
   },
   	
   output: {
-    filename: 'brick.js',
+    filename: 'brick-element.js',
     path: path.resolve(__dirname, 'build/')
   }
 };

@@ -10,7 +10,7 @@ for example one could use Events or you can have a look at this repo: [App-State
 
 # Features 
 
- - It is **FAST and light**, less than 3kB minified (and 1kB gzip). <!--, try out the [benchmark test comparison with lit-html]().-->
+ - It is **FAST and light**, about 6kB minified (and 2kB gzip). <!--, try out the [benchmark test comparison with lit-html]().-->
  - Supports **imports of styles** and in general of ```<template>```. Gives a pattern to import shared styles (like a ```normalize```) from templates, cutting on parsing time.
  - Supports **server-side rendering** out of the box, as opposed to lit-element (where because of interaction between elements is usually needed to incapsulate custom-elements one inside the other).
  - Supports automatic dom element-ID retrival, **no more shadowRoot.GetElementByID("...")**. 

@@ -14,9 +14,21 @@ function inputError(input) {
     console.log(input);
     throw Error('Invalid input.');
 }
+function fillAutosetFields(el, target_root_equality, id) {
+    // setting pattern: {root_prop : { id : target_prop }
+    // setting pattern: {root_handler : { id or this : event }
+    let p = target_root_equality.split("=");
+    if (p.length == 2 && p[0].trim() !== "" && p[1].trim() !== "") {
+        let root = p[1].trim();
+        let target = p[0].trim();
+        if (!el.hasOwnProperty(root))
+            el[root] = {};
+        el[root][id] = target;
+    }
+}
 export function litRead(strings, ...keys) {
     let output;
-    output = { template: "", props: {}, imports: [], IDs: [], autoset: {} };
+    output = { template: "", props: {}, imports: [], IDs: [], autoset: {}, eventHandler: {} };
     if (strings.length <= keys.length)
         throw Error('Improper parameter size.');
     if (strings.length === 1) {
@@ -41,13 +53,10 @@ export function litRead(strings, ...keys) {
                     let auto_set_props = trimmed.split("|");
                     id = auto_set_props[0].trim().substring(2);
                     for (let i = 1; i < auto_set_props.length; i++) {
-                        let prop = auto_set_props[i].split("=");
-                        if (prop.length !== 2 || prop[0].trim() === "" || prop[1].trim() === "")
-                            continue;
-                        // setting pattern: {root_prop : { id : target_prop }
-                        if (!output.autoset.hasOwnProperty(prop[1].trim()))
-                            output.autoset[prop[1].trim()] = {};
-                        output.autoset[prop[1].trim()][id] = prop[0].trim();
+                        if (auto_set_props[i][0] === "@")
+                            fillAutosetFields(output.eventHandler, auto_set_props[i].substr(1), id);
+                        else
+                            fillAutosetFields(output.autoset, auto_set_props[i], id);
                     }
                 }
                 temp_str += ` id="${id}" `;
@@ -60,6 +69,9 @@ export function litRead(strings, ...keys) {
                 for (let p of properties) {
                     if (p.includes('!'))
                         output.props[p.replace(/!/g, '')] = 'property';
+                    else if (p.includes('@')) {
+                        fillAutosetFields(output.eventHandler, p, "this");
+                    }
                     else
                         output.props[p] = 'attribute';
                 }
@@ -158,6 +170,12 @@ export function brick(strings, ...keys) {
                 for (let key in litOut.autoset) {
                     this._autoset[key] = litOut.autoset[key];
                 }
+                // copy eventHandler, this works also in case of inheritance
+                if (!this._eventHandler)
+                    this._eventHandler = {};
+                for (let key in litOut.eventHandler) {
+                    this._eventHandler[key] = litOut.eventHandler[key];
+                }
                 // attach shadow or inherit shadow
                 let conf = (config && config.shadowRoot) ? config.shadowRoot : { mode: 'open', delegatesFocus: false };
                 let shadowRoot = (config && config.inherit) ? this.shadowRoot : this.attachShadow(conf);
@@ -174,8 +192,10 @@ export function brick(strings, ...keys) {
                 this.swr = this.shadowRoot;
                 // set the attribute-property reflection and local setters, does not re-define attributes in case of inheritance
                 this.setProps();
-                // set Automatic bind to functions
+                // set Automatic bind to functions (override elemets functions)
                 this.setFuncBind();
+                // set Automatic event handling
+                this.setEventHandlers();
                 // define getters and setters for brick-slots, in case of inheritance does not re-define 
                 this.acquireSlots();
                 this.setRootToChilds();
@@ -204,6 +224,8 @@ export function brick(strings, ...keys) {
                                 set: (val) => {
                                     this["_" + prop] = val;
                                     this.autosetTargetProps(prop, val);
+                                    if (this['update_' + prop] !== undefined)
+                                        this['update_' + prop](val);
                                 },
                                 get: () => { return this["_" + prop]; }
                             });
@@ -219,6 +241,19 @@ export function brick(strings, ...keys) {
                             if (this.ids.hasOwnProperty(id))
                                 this.ids[id][target] = this[prop].bind(this);
                         }
+                    }
+                }
+            }
+            setEventHandlers() {
+                for (const [handler, obj] of Object.entries(this._eventHandler)) {
+                    if (typeof (this[handler]) !== "function")
+                        continue;
+                    for (const [id, target] of Object.entries(obj)) {
+                        if (id === "this")
+                            this.addEventListener(target, this[handler].bind(this));
+                        // @ts-ignore
+                        else if (this.ids.hasOwnProperty(id))
+                            this.ids[id].addEventListener(target, this[handler].bind(this));
                     }
                 }
             }
