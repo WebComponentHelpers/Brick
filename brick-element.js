@@ -15,15 +15,15 @@ function inputError(input) {
     throw Error('Invalid input.');
 }
 function fillAutosetFields(el, target_root_equality, id) {
-    // setting pattern: {root_prop : { id : target_prop }
-    // setting pattern: {root_handler : { id or this : event }
+    // setting pattern: {root_prop : [{ id , target_prop }]
+    // setting pattern: {root_handler : [{ id , target_event }]
     let p = target_root_equality.split("=");
     if (p.length == 2 && p[0].trim() !== "" && p[1].trim() !== "") {
         let root = p[1].trim();
         let target = p[0].trim();
         if (!el.hasOwnProperty(root))
-            el[root] = {};
-        el[root][id] = target;
+            el[root] = [];
+        el[root].push({ "id": id, "target": target });
     }
 }
 export function litRead(strings, ...keys) {
@@ -53,8 +53,8 @@ export function litRead(strings, ...keys) {
                     let auto_set_props = trimmed.split("|");
                     id = auto_set_props[0].trim().substring(2);
                     for (let i = 1; i < auto_set_props.length; i++) {
-                        if (auto_set_props[i][0] === "@")
-                            fillAutosetFields(output.eventHandler, auto_set_props[i].substr(1), id);
+                        if (auto_set_props[i].trim()[0] === "@")
+                            fillAutosetFields(output.eventHandler, auto_set_props[i].trim().substr(1), id);
                         else
                             fillAutosetFields(output.autoset, auto_set_props[i], id);
                     }
@@ -168,13 +168,17 @@ export function brick(strings, ...keys) {
                 if (!this._autoset)
                     this._autoset = {};
                 for (let key in litOut.autoset) {
-                    this._autoset[key] = litOut.autoset[key];
+                    if (!this._autoset[key])
+                        this._autoset[key] = [];
+                    this._autoset[key] = this._autoset[key].concat(litOut.autoset[key]);
                 }
                 // copy eventHandler, this works also in case of inheritance
                 if (!this._eventHandler)
                     this._eventHandler = {};
                 for (let key in litOut.eventHandler) {
-                    this._eventHandler[key] = litOut.eventHandler[key];
+                    if (!this._eventHandler[key])
+                        this._eventHandler[key] = [];
+                    this._eventHandler[key] = this._eventHandler[key].concat(litOut.eventHandler[key]);
                 }
                 // attach shadow or inherit shadow
                 let conf = (config && config.shadowRoot) ? config.shadowRoot : { mode: 'open', delegatesFocus: false };
@@ -186,6 +190,8 @@ export function brick(strings, ...keys) {
                 if (!this.ids)
                     this.ids = {};
                 for (let id of litOut.IDs) {
+                    if (this.ids.hasOwnProperty(id))
+                        throw new Error(`Multiple definition of ShadowDom ID: '${id}'.`);
                     this.ids[id] = shadowRoot.getElementById(id);
                 }
                 this.qs = this.shadowRoot.querySelector;
@@ -193,7 +199,10 @@ export function brick(strings, ...keys) {
                 // set the attribute-property reflection and local setters, does not re-define attributes in case of inheritance
                 this.setProps();
                 // set Automatic bind to functions (override elemets functions)
-                this.setFuncBind();
+                // this is kind of an anti pattern, was originally introduced 
+                // to add common event like "onclick" , etc., superseeded now by the 
+                // other API @click, etc.  TO-BE-REMOVED.
+                //this.setFuncBind();
                 // set Automatic event handling
                 this.setEventHandlers();
                 // define getters and setters for brick-slots, in case of inheritance does not re-define 
@@ -233,28 +242,32 @@ export function brick(strings, ...keys) {
                     }
                 }
             }
-            setFuncBind() {
-                for (const [prop, obj] of Object.entries(this._autoset)) {
-                    if (!this._props.hasOwnProperty(prop) && typeof (this[prop]) === "function") {
-                        for (const [id, target] of Object.entries(obj)) {
+            /*
+            // this is kind of an anti pattern, was originally introduced
+            // to add common event like "onclick" , etc., superseeded now by the
+            // other API @click, etc.  TO-BE-REMOVED.
+            setFuncBind(){
+                for(const [prop, obj] of Object.entries(this._autoset)){
+                    if(!this._props.hasOwnProperty(prop) && typeof(this[prop]) === "function") {
+                        for(const [id, target] of Object.entries(obj)){
                             // @ts-ignore
-                            if (this.ids.hasOwnProperty(id))
-                                this.ids[id][target] = this[prop].bind(this);
+                            if(this.ids.hasOwnProperty(id)) this.ids[id][target] = this[prop].bind(this);
                         }
                     }
                 }
             }
+            */
             setEventHandlers() {
-                for (const [handler, obj] of Object.entries(this._eventHandler)) {
+                for (const [handler, obj_array] of Object.entries(this._eventHandler)) {
                     if (typeof (this[handler]) !== "function")
                         continue;
-                    for (const [id, target] of Object.entries(obj)) {
-                        if (id === "this")
-                            this.addEventListener(target, this[handler].bind(this));
+                    obj_array.forEach((val) => {
+                        if (val.id === "this")
+                            this.addEventListener(val.target, this[handler].bind(this));
                         // @ts-ignore
-                        else if (this.ids.hasOwnProperty(id))
-                            this.ids[id].addEventListener(target, this[handler].bind(this));
-                    }
+                        else if (this.ids.hasOwnProperty(val.id))
+                            this.ids[val.id].addEventListener(val.target, this[handler].bind(this));
+                    });
                 }
             }
             acquireSlots() {
@@ -335,13 +348,13 @@ export function brick(strings, ...keys) {
             }
             autosetTargetProps(name, newVal) {
                 if (this._autoset.hasOwnProperty(name)) {
-                    for (const [id, prop] of Object.entries(this._autoset[name])) {
+                    this._autoset[name].forEach((val) => {
                         //@ts-ignore
-                        if (this.ids.hasOwnProperty(id) && typeof (this.ids[id][prop]) !== "undefined") {
+                        if (this.ids.hasOwnProperty(val.id) && typeof (this.ids[val.id][val.target]) !== "undefined") {
                             //@ts-ignore
-                            this.ids[id][prop] = newVal;
+                            this.ids[val.id][val.target] = newVal;
                         }
-                    }
+                    });
                 }
             }
         };

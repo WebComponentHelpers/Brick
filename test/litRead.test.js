@@ -118,9 +118,39 @@ export default function (){
                 chai.assert.deepEqual(out.IDs, ["bella","ciao"] , 'IDs has two strings ');
                 chai.assert.deepEqual(out.imports,[], 'imports is empty ');
                 chai.assert.deepEqual(out.props,{}, 'props is empty ');
-                chai.assert.deepEqual(out.autoset,{"hermano":{"bella":"hola"}}, 'autoset is not empty ');
+                chai.assert.deepEqual(out.autoset,{"hermano":[{id:"bella", target:"hola"}]}, 'autoset is not empty ');
             });
         });
+
+        describe('Autoset events and props',()=>{
+            let out = litRead`<h1 ${'#-bella | hola=hermano | @event=handler | @ ev2 = hand2 | @ noope | @noope = |  '}></h1> <span ${'#-ciao'}> </span>`;
+            it('sanity check on output types ',()=>{
+                chai.assert.typeOf(out.template, 'string', 'template type is a string ');
+                chai.assert.isArray(out.IDs, 'IDs are array ');
+                chai.assert.typeOf(out.autoset, 'object', 'autoset is object ');
+                chai.assert.typeOf(out.eventHandler, 'object', 'eventHandler is object ');
+                chai.assert.typeOf(out.props, 'object', 'props is object ');
+            });
+        
+
+            it('Sanity check on output value ', function () {
+                chai.assert.equal(out.template,'<h1  id="bella" ></h1> <span  id="ciao" > </span>', 'template ');
+                chai.assert.deepEqual(out.IDs, ["bella","ciao"] , 'IDs has two strings ');
+                chai.assert.deepEqual(out.imports,[], 'imports is empty ');
+                chai.assert.deepEqual(out.props,{}, 'props is empty ');
+                chai.assert.deepEqual(out.autoset,{"hermano":[{id:"bella", target:"hola"}]}, 'autoset is not empty ');
+                chai.assert.deepEqual(out.eventHandler,{"handler":[{target:"event", id:"bella"}], "hand2":[{target:"ev2",id:"bella"}]}, 'eventhandler match ');
+            });
+        });
+        
+        /*describe('Autoset and events additional on same root',()=>{
+            let out = litRead`<h1 ${'#-bella | hola=hermano | pippo=hermano | @ ev = hand | @ev2 = hand '}></h1> <span ${'#-ciao'}> </span>`;
+            it('Has right output object ',()=>{
+                chai.assert.deepEqual(out.autoset,{"hermano":{"bella":"hola", "bella":"pippo"}}, 'autoset match ');
+                chai.assert.deepEqual(out.eventHandler,{"hand":{"bella":"ev"}, "hand2":{"bella":"ev2"}}, 'eventhandler match ');
+            });
+        });*/
+
         
         describe('Imports as input', () => {
             let temp = document.createElement('template');
@@ -161,6 +191,11 @@ export default function (){
                 ${`|* ciao 
                    | !zuzzo  
                    | peppo *|`}`;
+                let out4 = litRead`<h1></h1> 
+                   ${`|* ciao 
+                      | !zuzzo  
+                      | peppo | @ev=hand | @ ev2 = hand2*|`}`;
+                   
 
                 
                 chai.assert.deepEqual(out0.props, {'ciao':'attribute'}, 'prop fail identity string' );

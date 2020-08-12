@@ -199,7 +199,6 @@ export default function (){
                 slot_test.ingestData(dat);
                 chai.assert.equal(slot_test.s_custom.nice_prop,'bella', "does not set attribute");
                 chai.assert.include(slot_test.s_custom, {tagName:"TEST-CUSTOM",innerText:"amaizing3"}, "Did not set value");
-                console.log(slot_test);
             });
         });
         describe('Inheritance',()=>{
