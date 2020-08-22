@@ -4,7 +4,9 @@ import {brick} from '../brick-element.js'
 export default function (){
 
     let counter = 0;
+    let counter_click = 0;
     let attr_value = 'default';
+    let setter_value = 'default';
     let style = document.createElement('template');
     style.innerHTML=`<style> h1{color:blue;} h2{color:red;} h3{color:green;} </style>`;
     let h1 = document.createElement('template');
@@ -12,21 +14,38 @@ export default function (){
     let h2 = document.createElement('template');
     h2.innerHTML=`<h2> smaller test </h2>`;
     
-    let mixin = brick`<h3>${'ciao'}</h3> ${""}
-                    <h4${'#-cocco'}> Ciao</h4>
-                    <h5${'#-hey'}>ciao</h5>
-                    <h5${'#-bella | innerText=updatable '}>ciao</h5>
+    let mxn0 = brick`
+        <div></div>
+        ${'|* attr | !test_prop *|'}
+    `;
+    customElements.define('test-element0',class extends mxn0(HTMLElement){});
 
-                    ${style} 
-                    ${[h1,h2]}
-                    ${'|* updatable | not_updatable *|'} `;
+    let mixin = brick`
+        <h3>${'ciao'}</h3> ${""}
+        <h4${'#-cocco'}> Ciao</h4>
+        <h5${'#-hey'}>ciao</h5>
+        <h5 ${'#-bella | innerText=updatable | @click=handler | uknownattr=setter'} > ciao </h5>
+        <input ${'#-jaja | value=setter '} type="text">
+        <test-element0 ${'#-custom | attr=updatable | test_prop=setter'} ></test-element0>
+ 
+        ${style} 
+        ${[h1,h2]}
+        ${'|* updatable | not_updatable | !setter | @blur=handler2 *|'} `;
 
     customElements.define('test-element',class extends mixin(HTMLElement){
         update_updatable(newval){
             attr_value = newval;
             counter++;
         }
-        
+        update_setter(newval){
+            setter_value = newval;
+        }
+        handler(ev){
+            counter_click++;
+        }
+        handler2(ev){
+
+        }
     });
 
     let el = document.createElement('test-element');
@@ -45,7 +64,9 @@ export default function (){
                 chai.assert.include(el.shadowRoot.children[4], { tagName:"H4", id:"cocco"},  'child 4 fail');
                 chai.assert.include(el.shadowRoot.children[5], { tagName:"H5", id:'hey'},  'child 5 fail');
                 chai.assert.include(el.shadowRoot.children[6], { tagName:"H5", id:'bella'},  'child 6 fail');
-                chai.assert.equal(el.shadowRoot.children.length,7 ,  'elements number differ');
+                chai.assert.include(el.shadowRoot.children[7], { tagName:"INPUT", id:'jaja'},  'child 7 fail');
+                chai.assert.include(el.shadowRoot.children[8], { tagName:"TEST-ELEMENT0", id:'custom'},  'child 8 fail');
+                chai.assert.equal(el.shadowRoot.children.length,9 ,  'elements number differ');
 
                 chai.assert.property(el,"swr", 'has shortcut for shadow');
                 chai.assert.property(el,"qs", 'has shortcut for query selector');
@@ -54,11 +75,13 @@ export default function (){
         });
 
         describe('IDs',()=>{
-            it('has ID quick reference well defined, and no more no less than 3.',()=>{
+            it('has ID quick reference well defined, and no more no less than 5.',()=>{
                 chai.assert.include(el.ids.cocco, {tagName:'H4', id:"cocco"}, 'ID reference 1 ok');
                 chai.assert.include(el.ids.hey, {tagName:'H5', id:"hey"}, 'ID reference 2 ok');
                 chai.assert.include(el.ids.bella, {tagName:'H5', id:"bella"}, 'ID reference 3 ok');
-                chai.assert.equal(Object.keys(el.ids).length, 3, 'only 3 IDs no more, no less');
+                chai.assert.include(el.ids.jaja, {tagName:'INPUT', id:"jaja"}, 'ID reference 4 ok');
+                chai.assert.include(el.ids.custom, {tagName:'TEST-ELEMENT0', id:"custom"}, 'ID reference 5 ok');
+                chai.assert.equal(Object.keys(el.ids).length, 5, 'only 5 IDs no more, no less');
             });
             
         });
@@ -100,10 +123,35 @@ export default function (){
                 chai.assert.equal(el.ids.bella.innerText,'','Autoset attribute must be set');
                 chai.assert.equal(el.not_updatable,'test', 'the attr reflect to property.');
             });
-            it('Runs the autoset properly on attribute',()=>{
 
+            it("Works on internal custom-elements",()=>{
+                el.setAttribute("updatable","ciao");
+                chai.assert.isTrue(el.ids.custom.hasAttribute("attr"), "has attribute");
+                chai.assert.equal(el.ids.custom.getAttribute("attr"),"ciao", "Getter attribute works")
             });
 
+        });
+
+        describe("Setters",()=>{
+            it("Has the setters",()=>{
+                chai.assert.isTrue(el.hasOwnProperty("setter"), "has prop");
+            });
+            el.setter = "poco";
+            it("Properly reflects to targets props",()=>{
+                chai.assert.equal(el.ids.jaja.value, "poco", "Reflects to prop");
+            });
+            it("Runs user defined side effects",()=>{
+                chai.assert.equal(setter_value,"poco");
+            });
+            it("Works on internal custom-elements",()=>{
+                //customElements.upgrade(el.ids.custom);
+                chai.assert.isTrue(el.ids.custom.hasOwnProperty("test_prop"), "Element has prop");
+                chai.assert.equal(el.ids.custom.test_prop,"poco");
+            });
+            it("Set user defined custom attributes on target",()=>{
+                chai.assert.isTrue(el.ids.bella.hasAttribute("uknownattr"), "has attribute");
+                chai.assert.equal(el.ids.bella.getAttribute("uknownattr"), "poco", "attribute get set");
+            })
         });
 
         localStorage.clear();

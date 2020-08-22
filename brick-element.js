@@ -12,7 +12,7 @@
 function inputError(input) {
     console.log('LitRead does not accept the following ${ } as input in string literal:');
     console.log(input);
-    throw Error('Invalid input.');
+    throw new Error('Invalid input.');
 }
 function fillAutosetFields(el, target_root_equality, id) {
     // setting pattern: {root_prop : [{ id , target_prop }]
@@ -30,7 +30,7 @@ export function litRead(strings, ...keys) {
     let output;
     output = { template: "", props: {}, imports: [], IDs: [], autoset: {}, eventHandler: {} };
     if (strings.length <= keys.length)
-        throw Error('Improper parameter size.');
+        throw new Error('Improper parameter size.');
     if (strings.length === 1) {
         output.template = `${strings[0]}`;
         return output;
@@ -182,7 +182,9 @@ export function brick(strings, ...keys) {
                 }
                 // attach shadow or inherit shadow
                 let conf = (config && config.shadowRoot) ? config.shadowRoot : { mode: 'open', delegatesFocus: false };
-                let shadowRoot = (config && config.inherit) ? this.shadowRoot : this.attachShadow(conf);
+                let shadowRoot = (this.shadowRoot) ? this.shadowRoot : this.attachShadow(conf);
+                if (config && config.inherit === false)
+                    this.shadowRoot.innerHTML = "";
                 for (let tmpl of litOut.imports) {
                     shadowRoot.appendChild(tmpl.content.cloneNode(true));
                 }
@@ -232,15 +234,28 @@ export function brick(strings, ...keys) {
                             Object.defineProperty(this, prop, {
                                 set: (val) => {
                                     this["_" + prop] = val;
-                                    this.autosetTargetProps(prop, val);
+                                    // maybe actually having same reference could be usefull
+                                    // what about proxy?  FIXME
+                                    this.autosetTargetProps(prop, this._deep_clone(val));
                                     if (this['update_' + prop] !== undefined)
                                         this['update_' + prop](val);
                                 },
-                                get: () => { return this["_" + prop]; }
+                                get: () => {
+                                    // maybe actually having same reference could be usefull
+                                    // what about a proxy?  FIXME
+                                    return this._deep_clone(this["_" + prop]);
+                                }
                             });
                         }
                     }
                 }
+            }
+            _deep_clone(obj) {
+                // maybe not the fastest, but hey, works...
+                if (typeof (obj) === "object")
+                    return JSON.parse(JSON.stringify(obj));
+                else
+                    return obj;
             }
             /*
             // this is kind of an anti pattern, was originally introduced
@@ -349,10 +364,19 @@ export function brick(strings, ...keys) {
             autosetTargetProps(name, newVal) {
                 if (this._autoset.hasOwnProperty(name)) {
                     this._autoset[name].forEach((val) => {
-                        //@ts-ignore
-                        if (this.ids.hasOwnProperty(val.id) && typeof (this.ids[val.id][val.target]) !== "undefined") {
-                            //@ts-ignore
-                            this.ids[val.id][val.target] = newVal;
+                        if (this.ids.hasOwnProperty(val.id)) {
+                            // it may happen that attribute or prop change fires before inner custom-element are upgraded
+                            if (this.ids[val.id].tagName.includes("-"))
+                                customElements.upgrade(this.ids[val.id]);
+                            // @ts-ignore
+                            if (this.ids[val.id].hasOwnProperty(val.target) || typeof (this.ids[val.id][val.target]) !== "undefined") {
+                                //@ts-ignore
+                                this.ids[val.id][val.target] = newVal;
+                            }
+                            else if (typeof (newVal) != "object" && typeof (newVal) != "function") {
+                                // custom attribute setter
+                                this.ids[val.id].setAttribute(val.target, newVal);
+                            }
                         }
                     });
                 }
